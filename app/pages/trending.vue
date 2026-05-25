@@ -141,4 +141,9 @@ const onChat = async (item: any) => {
     position: static;
   }
 }
+
+@media (max-width: 600px) {
+  .trending-hero h2 { font-size: 18px; }
+  .trending-page { padding: 0 8px; }
+}
 </style>

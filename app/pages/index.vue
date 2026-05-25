@@ -762,7 +762,14 @@ const onSearchBlur = () => { isFocused.value = false }
   .results-grid {
     grid-template-columns: 1fr;
   }
-  .hero-heading { font-size: 28px; }
-  .hero-desc { font-size: 14px; }
+  .hero-heading { font-size: 24px; }
+  .hero-desc { font-size: 13px; }
+  .hero-search-box { max-width: 100%; }
+  .hot-tags { gap: 4px; }
+  .hot-tag { font-size: 11px; padding: 0 8px; }
+  .quick-entry { font-size: 12px; padding: 6px 10px; }
+  .detail-section { padding: 0 12px 24px; }
+  .results-section { padding: 0 12px 24px; }
+  .explore-section { padding: 0 12px 24px; }
 }
 </style>

@@ -497,4 +497,24 @@ onMounted(() => {
   padding: 24px;
   overflow-y: auto;
 }
+
+/* ============ 响应式 ============ */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    z-index: 100;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+  }
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+    width: 220px;
+  }
+  .top-bar {
+    padding: 8px 12px;
+  }
+  .ai-btn span { display: none; }
+  .ai-btn { padding: 6px 10px; min-width: auto; }
+  .page-body { padding: 12px; }
+  .breadcrumb-nav { font-size: 12px; }
+}
 </style>
