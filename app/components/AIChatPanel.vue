@@ -1,36 +1,55 @@
 <template>
   <Teleport to="body">
-    <div class="chat-overlay" :class="{ open: isOpen }" @click.self="close">
+    <div class="chat-overlay" :class="{ open: isOpen }" @click.self="closePanel">
       <div class="chat-panel" :class="{ open: isOpen }">
         <!-- 面板头部 -->
         <div class="chat-header">
           <div class="chat-title">
             <el-icon :size="20"><Cpu /></el-icon>
             <span>AI 代码助手</span>
-            <el-tag v-if="repoContext" size="small" type="info" effect="plain">
+            <!-- Repo 上下文标签（可单独移除） -->
+            <el-tag
+              v-if="repoContext"
+              size="small"
+              type="info"
+              effect="plain"
+              closable
+              @close="removeContext"
+            >
               {{ repoContext }}
             </el-tag>
           </div>
           <div class="chat-actions">
-            <el-button text circle @click="clearChat">
-              <el-icon><Delete /></el-icon>
-            </el-button>
-            <el-button text circle @click="close">
-              <el-icon><Close /></el-icon>
-            </el-button>
+            <el-tooltip content="清除对话" placement="bottom">
+              <el-button text circle @click="clearChat">
+                <el-icon><Delete /></el-icon>
+              </el-button>
+            </el-tooltip>
+            <el-tooltip content="关闭面板" placement="bottom">
+              <el-button text circle @click="closePanel">
+                <el-icon><Close /></el-icon>
+              </el-button>
+            </el-tooltip>
           </div>
         </div>
 
         <!-- 消息列表 -->
         <div ref="messageListRef" class="chat-messages">
-          <!-- 欢迎消息 -->
-          <div v-if="messages.length === 0" class="chat-welcome">
-            <el-icon :size="40"><Cpu /></el-icon>
+          <!-- 欢迎态 -->
+          <div v-if="messages.length === 0 && !streaming" class="chat-welcome">
+            <div class="welcome-icon">
+              <el-icon :size="44"><Cpu /></el-icon>
+            </div>
             <h3>AI 代码分析助手</h3>
-            <p>我可以帮你理解仓库代码、分析架构、解答技术问题。</p>
+            <p v-if="repoContext">
+              正在分析 <strong>{{ repoContext }}</strong>，你可以问：
+            </p>
+            <p v-else>
+              选择一个仓库后点击「AI 分析」，我可以帮你深入理解代码
+            </p>
             <div class="quick-prompts">
               <el-tag
-                v-for="prompt in quickPrompts"
+                v-for="prompt in currentPrompts"
                 :key="prompt"
                 class="prompt-tag"
                 @click="sendMessage(prompt)"
@@ -40,7 +59,7 @@
             </div>
           </div>
 
-          <!-- 消息 -->
+          <!-- 消息列表 -->
           <div
             v-for="(msg, idx) in messages"
             :key="idx"
@@ -67,14 +86,14 @@
               <el-icon :size="18"><Cpu /></el-icon>
             </div>
             <div class="message-body">
-              <div class="message-content">
+              <div class="message-content streaming-content">
                 <MarkdownContent :content="streamContent" />
                 <span class="cursor-blink">|</span>
               </div>
             </div>
           </div>
 
-          <!-- 加载中 -->
+          <!-- 加载中（等待首 token） -->
           <div v-if="loading && !streaming" class="chat-loading">
             <div class="typing-indicator">
               <span></span><span></span><span></span>
@@ -84,6 +103,14 @@
 
         <!-- 输入区 -->
         <div class="chat-input">
+          <!-- 停止生成按钮 -->
+          <div v-if="streaming" class="stop-bar">
+            <el-button type="warning" plain size="small" @click="stopStreaming">
+              <el-icon><VideoPause /></el-icon> 停止生成
+            </el-button>
+            <span class="stop-hint">AI 正在生成中...</span>
+          </div>
+
           <el-input
             v-model="inputText"
             type="textarea"
@@ -95,8 +122,9 @@
           >
             <template #suffix>
               <el-button
+                v-if="!streaming"
                 type="primary"
-                :disabled="!inputText.trim() || streaming"
+                :disabled="!inputText.trim()"
                 :loading="loading"
                 circle
                 size="small"
@@ -114,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { Cpu, Delete, Close, User, Promotion } from '@element-plus/icons-vue'
+import { Cpu, Delete, Close, User, Promotion, VideoPause } from '@element-plus/icons-vue'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -129,6 +157,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: []
+  'clear-context': []
 }>()
 
 const messageListRef = ref<HTMLElement>()
@@ -137,29 +166,58 @@ const messages = ref<ChatMessage[]>([])
 const streaming = ref(false)
 const loading = ref(false)
 const streamContent = ref('')
+const abortController = ref<AbortController | null>(null)
 
-const quickPrompts = [
-  '这个项目的主要功能是什么？',
-  '代码架构是怎样的？',
-  '有哪些核心模块？',
-  '如何开始贡献代码？',
-]
+// 根据是否有 repo 上下文切换快捷问题
+const quickPrompts = computed(() => {
+  if (props.repoContext) {
+    return [
+      '这个项目的主要功能是什么？',
+      '代码架构是怎样的？',
+      '有哪些核心模块？',
+      '如何开始贡献代码？',
+    ]
+  }
+  return [
+    '搜索一个 GitHub 仓库开始分析',
+    'GitHub 趋势有哪些热门项目？',
+    '帮我分析一个开源项目',
+  ]
+})
 
-const close = () => emit('close')
+const currentPrompts = computed(() => quickPrompts.value)
+
+// ===== 核心操作 =====
+const closePanel = () => {
+  emit('close')
+}
+
+const removeContext = () => {
+  emit('clear-context')
+}
 
 const clearChat = () => {
   messages.value = []
   streamContent.value = ''
+  emit('clear-context')
 }
 
-const scrollToBottom = () => {
-  nextTick(() => {
-    if (messageListRef.value) {
-      messageListRef.value.scrollTop = messageListRef.value.scrollHeight
-    }
-  })
+// ===== 停止流式输出 =====
+const stopStreaming = () => {
+  if (abortController.value) {
+    abortController.value.abort()
+    abortController.value = null
+  }
+  // 把已输出的内容作为一条消息保存
+  if (streamContent.value) {
+    messages.value.push({ role: 'assistant', content: streamContent.value + '\n\n*[已停止生成]*' })
+  }
+  streamContent.value = ''
+  streaming.value = false
+  loading.value = false
 }
 
+// ===== 发送消息 =====
 const handleSend = () => {
   if (!inputText.value.trim() || streaming.value) return
   sendMessage(inputText.value)
@@ -167,11 +225,9 @@ const handleSend = () => {
 }
 
 const sendMessage = async (text: string) => {
-  // 添加用户消息
   messages.value.push({ role: 'user', content: text })
   scrollToBottom()
 
-  // 构建上下文
   const repoContext = props.repoData
     ? {
         name: props.repoData.name,
@@ -181,9 +237,12 @@ const sendMessage = async (text: string) => {
       }
     : null
 
-  // 发起流式请求
   loading.value = true
   streamContent.value = ''
+
+  // 创建 AbortController
+  const controller = new AbortController()
+  abortController.value = controller
 
   try {
     const response = await fetch('/api/ai/chat', {
@@ -193,6 +252,7 @@ const sendMessage = async (text: string) => {
         messages: messages.value.map(m => ({ role: m.role, content: m.content })),
         repoContext,
       }),
+      signal: controller.signal,
     })
 
     if (!response.ok) {
@@ -227,48 +287,56 @@ const sendMessage = async (text: string) => {
             messages.value.push({ role: 'assistant', content: data.fullText })
             streamContent.value = ''
             streaming.value = false
+            abortController.value = null
             scrollToBottom()
             return
           } else if (data.type === 'error') {
             ElMessage.error(data.message || 'AI 服务错误')
             streaming.value = false
+            abortController.value = null
             return
           }
-        } catch { /* skip malformed lines */ }
+        } catch { /* skip */ }
       }
     }
   } catch (err: any) {
+    if (err.name === 'AbortError') {
+      // 用户主动停止，已在 stopStreaming 中处理
+      return
+    }
     ElMessage.error(err.message || '请求失败')
     streaming.value = false
     loading.value = false
+    abortController.value = null
   }
+}
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (messageListRef.value) {
+      messageListRef.value.scrollTop = messageListRef.value.scrollHeight
+    }
+  })
 }
 </script>
 
 <style scoped>
+/* ===== 遮罩 ===== */
 .chat-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.3);
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
+.chat-overlay.open { opacity: 1; pointer-events: all; }
 
-.chat-overlay.open {
-  opacity: 1;
-  pointer-events: all;
-}
-
+/* ===== 面板 ===== */
 .chat-panel {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; right: 0; bottom: 0;
   width: 480px;
   max-width: 100vw;
   background: var(--el-bg-color);
@@ -278,187 +346,141 @@ const sendMessage = async (text: string) => {
   transform: translateX(100%);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.chat-panel.open { transform: translateX(0); }
 
-.chat-panel.open {
-  transform: translateX(0);
-}
-
+/* ===== Header ===== */
 .chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--el-border-color-lighter);
   flex-shrink: 0;
 }
-
 .chat-title {
   display: flex;
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
+  flex: 1;
+  min-width: 0;
 }
+.chat-actions { display: flex; gap: 2px; }
 
-.chat-actions {
-  display: flex;
-  gap: 4px;
-}
-
+/* ===== 消息区 ===== */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px;
+  padding: 16px 18px;
+  scroll-behavior: smooth;
 }
 
-.chat-welcome {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--el-text-color-secondary);
+/* 欢迎态 */
+.chat-welcome { text-align: center; padding: 40px 16px; }
+.welcome-icon {
+  width: 72px; height: 72px;
+  margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--el-color-primary-light-8), var(--el-color-primary-light-3));
+  border-radius: 18px; color: var(--el-color-primary);
 }
-
-.chat-welcome h3 {
-  margin: 12px 0 8px;
-  color: var(--el-text-color-primary);
-}
-
-.chat-welcome p {
-  font-size: 14px;
-}
+.chat-welcome h3 { margin: 0 0 8px; font-size: 17px; }
+.chat-welcome p { font-size: 13px; color: var(--el-text-color-secondary); margin: 0 0 16px; }
+.chat-welcome strong { color: var(--el-color-primary); }
 
 .quick-prompts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 20px;
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
 }
-
 .prompt-tag {
-  cursor: pointer;
-  transition: all 0.2s;
+  cursor: pointer; transition: all 0.2s;
 }
-
 .prompt-tag:hover {
-  background: var(--el-color-primary);
-  color: #fff;
-  border-color: var(--el-color-primary);
+  background: var(--el-color-primary); color: #fff; border-color: var(--el-color-primary);
 }
 
-.chat-message {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.chat-message.user {
-  flex-direction: row-reverse;
-}
-
+/* 消息气泡 */
+.chat-message { display: flex; gap: 10px; margin-bottom: 18px; }
+.chat-message.user { flex-direction: row-reverse; }
 .message-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  font-size: 16px;
 }
+.chat-message.user .message-avatar { background: var(--el-color-primary-light-9); color: var(--el-color-primary); }
+.chat-message.assistant .message-avatar { background: var(--el-color-success-light-9); color: var(--el-color-success); }
 
-.chat-message.user .message-avatar {
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-}
-
-.chat-message.assistant .message-avatar {
-  background: var(--el-color-success-light-9);
-  color: var(--el-color-success);
-}
-
-.message-body {
-  max-width: 85%;
-  min-width: 0;
-}
-
+.message-body { max-width: 82%; min-width: 0; }
 .message-content {
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  line-height: 1.6;
-  word-break: break-word;
+  padding: 10px 14px; border-radius: 14px;
+  font-size: 14px; line-height: 1.65; word-break: break-word;
 }
-
 .user-content {
-  background: var(--el-color-primary);
-  color: #fff;
+  background: var(--el-color-primary); color: #fff;
   border-bottom-right-radius: 4px;
 }
-
 .chat-message.assistant .message-content {
   background: var(--el-fill-color);
   border-bottom-left-radius: 4px;
 }
 
+/* 流式输出 */
+.streaming-content { border: 1px dashed var(--el-color-primary-light-5); }
+
 .cursor-blink {
-  display: inline;
-  animation: blink 1s step-end infinite;
-  color: var(--el-color-primary);
-  font-weight: bold;
+  display: inline; animation: blink 1s step-end infinite;
+  color: var(--el-color-primary); font-weight: bold;
 }
+@keyframes blink { 50% { opacity: 0; } }
 
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-.chat-loading {
-  display: flex;
-  justify-content: center;
-  padding: 16px;
-}
-
+/* 加载态 */
+.chat-loading { display: flex; justify-content: flex-start; padding: 8px 0; }
 .typing-indicator {
-  display: flex;
-  gap: 4px;
-  padding: 10px 16px;
-  background: var(--el-fill-color);
-  border-radius: 12px;
+  display: flex; gap: 4px; padding: 10px 16px;
+  background: var(--el-fill-color); border-radius: 12px;
 }
-
 .typing-indicator span {
-  width: 8px;
-  height: 8px;
-  background: var(--el-text-color-secondary);
-  border-radius: 50%;
+  width: 8px; height: 8px;
+  background: var(--el-text-color-secondary); border-radius: 50%;
   animation: typing 1.4s infinite ease-in-out;
 }
-
 .typing-indicator span:nth-child(1) { animation-delay: 0s; }
 .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
 .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
 @keyframes typing {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30% { transform: translateY(-6px); opacity: 1; }
 }
 
+/* ===== 输入区 ===== */
 .chat-input {
-  padding: 12px 20px 16px;
+  padding: 10px 18px 14px;
   border-top: 1px solid var(--el-border-color-lighter);
   flex-shrink: 0;
 }
 
-.input-hint {
-  font-size: 11px;
-  color: var(--el-text-color-placeholder);
-  margin: 6px 0 0;
-  text-align: right;
+/* 停止生成条 */
+.stop-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: var(--el-color-warning-light-9);
+  border-radius: 8px;
+}
+.stop-hint {
+  font-size: 12px; color: var(--el-text-color-secondary);
 }
 
-/* 响应式 */
+.input-hint {
+  font-size: 11px; color: var(--el-text-color-placeholder);
+  margin: 6px 0 0; text-align: right;
+}
+
+/* ===== 响应式 ===== */
 @media (max-width: 520px) {
-  .chat-panel {
-    width: 100vw;
-  }
+  .chat-panel { width: 100vw; }
 }
 </style>

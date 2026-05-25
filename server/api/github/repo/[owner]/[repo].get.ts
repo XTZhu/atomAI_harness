@@ -10,6 +10,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: '缺少 owner/repo 参数' })
   }
 
+  // 缓存 key（仓库详情变化不大，5 分钟 TTL）
+  const cacheKey = `repo:${owner}/${repo}`
+  const cached = getCached<any>(cacheKey)
+  if (cached) return cached
+
   const octokit = useGitHub()
 
   // 并行获取基础信息和 README
@@ -27,7 +32,7 @@ export default defineEventHandler(async (event) => {
     ? Buffer.from(readmeResult.value.data.content, 'base64').toString('utf-8')
     : null
 
-  return {
+  const result = {
     id: repoData.id,
     name: repoData.full_name,
     description: repoData.description,
@@ -54,4 +59,7 @@ export default defineEventHandler(async (event) => {
       type: repoData.owner.type,
     },
   }
+
+  setCache(cacheKey, result, 5 * 60 * 1000)
+  return result
 })

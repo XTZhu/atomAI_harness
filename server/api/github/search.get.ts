@@ -12,6 +12,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: '搜索关键词不能为空' })
   }
 
+  // 缓存 key（搜索结果变化较快，2 分钟 TTL）
+  const cacheKey = `search:${q}:${page}:${perPage}`
+  const cached = getCached<any>(cacheKey)
+  if (cached) return cached
+
   const octokit = useGitHub()
   const { data } = await octokit.request('GET /search/repositories', {
     q,
@@ -21,10 +26,13 @@ export default defineEventHandler(async (event) => {
     order: 'desc',
   })
 
-  return {
+  const result = {
     total: data.total_count,
     items: data.items.map(formatRepo),
   }
+
+  setCache(cacheKey, result, 2 * 60 * 1000)
+  return result
 })
 
 function formatRepo(repo: any) {

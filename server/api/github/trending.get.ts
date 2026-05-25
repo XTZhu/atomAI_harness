@@ -8,6 +8,11 @@ export default defineEventHandler(async (event) => {
   const language = String(query.language || '')
   const perPage = Math.min(Number(query.per_page || 15), 30)
 
+  // 缓存 key: 参数组合
+  const cacheKey = `trending:${since}:${language}:${perPage}`
+  const cached = getCached<any>(cacheKey)
+  if (cached) return cached
+
   const octokit = useGitHub()
 
   // 构建搜索查询
@@ -36,7 +41,7 @@ export default defineEventHandler(async (event) => {
     per_page: perPage,
   })
 
-  return {
+  const result = {
     updatedAt: new Date().toISOString(),
     items: data.items.map((repo: any) => ({
       name: repo.full_name,
@@ -54,4 +59,8 @@ export default defineEventHandler(async (event) => {
       createdAt: repo.created_at,
     })),
   }
+
+  // 缓存 5 分钟
+  setCache(cacheKey, result, 5 * 60 * 1000)
+  return result
 })

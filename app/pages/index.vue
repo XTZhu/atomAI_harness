@@ -117,7 +117,7 @@
             <el-button size="small" type="primary" plain @click.stop="selectRepo(repo)">
               <el-icon><Folder /></el-icon> 详情
             </el-button>
-            <el-button size="small" type="warning" plain @click.stop="selectRepo(repo); openChat(repo)">
+            <el-button size="small" type="warning" plain @click.stop="handleChatFromResult(repo)">
               <el-icon><Cpu /></el-icon> AI 分析
             </el-button>
           </div>
@@ -144,9 +144,9 @@
 
     <!-- ============ 未搜索时的欢迎态 ============ -->
     <section v-if="!searched && !selectedRepo" class="explore-section">
-      <div class="explore-grid">
+      <div class="explore-grid" :class="{ 'single-col': !recentRepos.length }">
         <!-- 趋势栏 -->
-        <TrendingList compact @select="selectRepo" @chat="(item) => { selectRepo(item); openChat(item) }" />
+        <TrendingList compact @select="selectRepo" @chat="handleChatFromTrending" />
         <!-- 最近浏览 -->
         <el-card v-if="recentRepos.length" class="recent-card" shadow="hover">
           <template #header>
@@ -299,8 +299,13 @@ const selectRepo = async (repo: any) => {
     selectedRepo.value = data
     setBreadcrumb(name, name)
     addRecent({ name, owner: repo.owner || data.owner })
-    // 滚动到顶部
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // 滚动到详情卡片位置
+    nextTick(() => {
+      const el = document.querySelector('.detail-section')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    })
   } catch (err: any) {
     ElMessage.error(err.message || '获取仓库详情失败')
   }
@@ -308,6 +313,25 @@ const selectRepo = async (repo: any) => {
 
 const openChat = (repo: any) => {
   openChatPanel(repo.name || repo.full_name, selectedRepo.value)
+}
+
+// 从趋势/搜索结果打开 AI 面板（先获取详情再打开）
+const handleChatFromTrending = async (item: any) => {
+  const name = item.name || item.full_name
+  try {
+    const data = await $fetch(`/api/github/repo/${name}`)
+    selectedRepo.value = data
+    setBreadcrumb(name, name)
+    addRecent({ name, owner: item.owner || data.owner })
+    openChatPanel(name, data)
+  } catch (err: any) {
+    ElMessage.error(err.message || '获取仓库详情失败')
+    openChatPanel(name, null)
+  }
+}
+
+const handleChatFromResult = async (repo: any) => {
+  await handleChatFromTrending(repo)
 }
 
 // ===== 最近浏览 =====
@@ -568,21 +592,24 @@ const onSearchBlur = () => { isFocused.value = false }
 .result-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.2s;
 }
 
 .dark .result-overlay {
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(30, 30, 40, 0.92);
 }
 
 .result-card:hover .result-overlay {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .load-more {
@@ -604,6 +631,8 @@ const onSearchBlur = () => { isFocused.value = false }
 /* ============ 探索区（欢迎态） ============ */
 .explore-section {
   padding: 0 24px 32px;
+  display: flex;
+  justify-content: center;
 }
 
 .explore-grid {
@@ -611,8 +640,13 @@ const onSearchBlur = () => { isFocused.value = false }
   grid-template-columns: 1fr 320px;
   gap: 20px;
   align-items: start;
+  width: 100%;
   max-width: 1080px;
-  margin: 0 auto;
+}
+
+.explore-grid.single-col {
+  grid-template-columns: 1fr;
+  max-width: 700px;
 }
 
 .recent-card {

@@ -87,11 +87,25 @@
       </el-button>
     </div>
 
-    <!-- README 预览 -->
+    <!-- README 预览（Markdown 渲染） -->
     <el-collapse v-if="repo.readme" class="readme-collapse">
-      <el-collapse-item title="📄 README.md 预览" name="readme">
+      <el-collapse-item name="readme">
+        <template #title>
+          <div class="readme-title">
+            <el-icon><Document /></el-icon>
+            <span>README.md</span>
+            <el-tag size="small" type="info" effect="plain">预览</el-tag>
+          </div>
+        </template>
         <div class="readme-preview">
-          <pre><code>{{ repo.readme.slice(0, 2000) }}{{ repo.readme.length > 2000 ? '\n...(内容截断)' : '' }}</code></pre>
+          <MarkdownContent :content="readmePreview" />
+          <div v-if="repo.readme.length > 4000" class="readme-truncated">
+            <el-divider />
+            <span>README 内容较长，仅展示前 4000 字符。</span>
+            <el-button text type="primary" size="small" @click="openUrl(repo.url)">
+              在 GitHub 查看完整 README <el-icon><Link /></el-icon>
+            </el-button>
+          </div>
         </div>
       </el-collapse-item>
     </el-collapse>
@@ -99,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ChatDotRound, Link } from '@element-plus/icons-vue'
+import { ChatDotRound, Link, Document } from '@element-plus/icons-vue'
 
 const props = defineProps<{
   repo: any
@@ -108,6 +122,13 @@ const props = defineProps<{
 defineEmits<{
   chat: [repo: any]
 }>()
+
+// README 预览截断
+const readmePreview = computed(() => {
+  const readme = props.repo?.readme
+  if (!readme) return ''
+  return readme.length > 4000 ? readme.slice(0, 4000) : readme
+})
 
 const formatSize = (kb: number) => {
   if (!kb) return '-'
@@ -190,19 +211,27 @@ const openUrl = (url: string) => {
   margin-top: 16px;
 }
 
-.readme-preview {
-  background: var(--el-fill-color-lighter);
-  border-radius: 6px;
-  padding: 12px;
-  max-height: 400px;
-  overflow-y: auto;
+.readme-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.readme-preview pre {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
+.readme-preview {
+  background: var(--el-fill-color-lighter);
+  border-radius: 8px;
+  padding: 16px 20px;
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.readme-truncated {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 </style>

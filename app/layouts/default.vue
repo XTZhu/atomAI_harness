@@ -110,7 +110,8 @@
       :is-open="chatOpen"
       :repo-context="globalChatRepo"
       :repo-data="globalChatRepoData"
-      @close="chatOpen = false"
+      @close="handleChatClose"
+      @clear-context="handleClearContext"
     />
   </div>
 </template>
@@ -144,6 +145,19 @@ provide('openChat', (repoName: string, repoData?: any) => {
   globalChatRepoData.value = repoData || null
   chatOpen.value = true
 })
+
+// 关闭面板时重置上下文
+const handleChatClose = () => {
+  chatOpen.value = false
+  globalChatRepo.value = null
+  globalChatRepoData.value = null
+}
+
+// 清除对话时重置上下文
+const handleClearContext = () => {
+  globalChatRepo.value = null
+  globalChatRepoData.value = null
+}
 
 // 面包屑上下文（由页面注入）
 const currentRepoContext = ref<{ name: string; label: string } | null>(null)
@@ -209,13 +223,16 @@ onMounted(() => {
 /* ============ 侧边栏 ============ */
 .sidebar {
   width: 220px;
-  min-height: 100vh;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   border-right: 1px solid var(--el-border-color-light);
   background: var(--el-bg-color);
   display: flex;
   flex-direction: column;
   transition: width 0.25s ease;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .sidebar.collapsed { width: 64px; }
@@ -224,10 +241,16 @@ onMounted(() => {
 .brand {
   display: flex;
   align-items: center;
-  padding: 18px 14px;
+  padding: 16px 12px;
   gap: 10px;
   cursor: pointer;
   border-bottom: 1px solid var(--el-border-color-lighter);
+  min-height: 64px;
+}
+
+.sidebar.collapsed .brand {
+  padding: 16px 12px;
+  justify-content: center;
 }
 
 .brand-icon {
