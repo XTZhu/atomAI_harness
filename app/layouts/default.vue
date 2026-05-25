@@ -271,6 +271,12 @@ onMounted(() => {
 .brand-icon {
   flex-shrink: 0;
   transition: transform 0.25s;
+  animation: brandIn 0.5s ease-out;
+}
+
+@keyframes brandIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .brand:hover .brand-icon { transform: scale(1.08) rotate(-5deg); }

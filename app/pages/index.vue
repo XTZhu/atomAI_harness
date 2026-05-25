@@ -582,6 +582,19 @@ const onSearchBlur = () => { isFocused.value = false }
   transition: all 0.2s;
   overflow: hidden;
   background: var(--el-bg-color);
+  animation: cardIn 0.35s ease-out both;
+}
+
+.result-card:nth-child(1) { animation-delay: 0.03s; }
+.result-card:nth-child(2) { animation-delay: 0.08s; }
+.result-card:nth-child(3) { animation-delay: 0.13s; }
+.result-card:nth-child(4) { animation-delay: 0.18s; }
+.result-card:nth-child(5) { animation-delay: 0.23s; }
+.result-card:nth-child(6) { animation-delay: 0.28s; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .result-card:hover {

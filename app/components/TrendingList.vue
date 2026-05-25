@@ -293,6 +293,7 @@ watch([timeRange, language], () => fetchTrending())
 .trending-item:hover {
   background: var(--el-fill-color-light);
   padding-left: 8px;
+  transform: translateX(4px);
 }
 
 .trending-rank {
