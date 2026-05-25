@@ -76,6 +76,9 @@
 
     <!-- ============ 搜索结果 + 详情 ============ -->
     <section v-if="searched" class="results-section">
+      <!-- 搜索错误 -->
+      <ErrorFallback v-if="searchError" :message="searchError" @retry="fetchResults" />
+
       <!-- 搜索摘要 -->
       <div v-if="results.length && !selectedRepo" class="search-summary">
         <div class="summary-info">
@@ -213,6 +216,7 @@ const openChatPanel = inject<(name: string, data?: any) => void>('openChat', () 
 const keyword = ref('')
 const results = ref<any[]>([])
 const totalCount = ref(0)
+const searchError = ref('')
 const searched = ref(false)
 const searchQuery = ref('')
 const loading = ref(false)
@@ -277,6 +281,7 @@ const doSearch = () => {
 
 const fetchResults = async () => {
   loading.value = true
+  searchError.value = ''
   try {
     const data = await $fetch('/api/github/search', {
       query: { q: searchQuery.value, page: page.value, per_page: 12 },
@@ -288,7 +293,7 @@ const fetchResults = async () => {
     }
     totalCount.value = data.total
   } catch (err: any) {
-    ElMessage.error(err.message || '搜索失败')
+    searchError.value = err.message || '搜索失败'
   } finally {
     loading.value = false
   }

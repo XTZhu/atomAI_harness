@@ -49,11 +49,7 @@
 
     <!-- 错误态 -->
     <div v-else-if="error" class="trending-error">
-      <el-result icon="warning" title="加载失败" :sub-title="error">
-        <template #extra>
-          <el-button size="small" @click="fetchTrending">重试</el-button>
-        </template>
-      </el-result>
+      <ErrorFallback title="趋势加载失败" :message="error" @retry="fetchTrending" />
     </div>
 
     <!-- 空态 -->
