@@ -180,6 +180,9 @@ import {
 
 definePageMeta({ layout: 'default' })
 
+// 路由
+const route = useRoute()
+
 // ===== 上下文注入 =====
 const setBreadcrumb = inject<(name: string, label: string) => void>('setBreadcrumbRepo', () => {})
 const clearBreadcrumb = inject<() => void>('clearBreadcrumbRepo', () => {})

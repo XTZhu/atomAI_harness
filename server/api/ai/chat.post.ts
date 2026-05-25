@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const { messages, repoContext } = body || {}
 
   if (!messages || !Array.isArray(messages)) {
-    throw createError({ statusCode: 400, statusMessage: 'messages 参数缺失或格式错误' })
+    throw createError({ statusCode: 400, message: 'messages 参数缺失或格式错误' })
   }
 
   const config = useRuntimeConfig()

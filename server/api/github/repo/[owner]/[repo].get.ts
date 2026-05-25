@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const repo = getRouterParam(event, 'repo')
 
   if (!owner || !repo) {
-    throw createError({ statusCode: 400, statusMessage: '缺少 owner/repo 参数' })
+    throw createError({ statusCode: 400, message: '缺少 owner/repo 参数' })
   }
 
   const octokit = useGitHub()
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   ])
 
   if (repoResult.status === 'rejected') {
-    throw createError({ statusCode: 404, statusMessage: `仓库 ${owner}/${repo} 未找到` })
+    throw createError({ statusCode: 404, message: `仓库 ${owner}/${repo} 未找到` })
   }
 
   const repoData = repoResult.value.data

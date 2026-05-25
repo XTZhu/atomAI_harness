@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const username = getRouterParam(event, 'username')
 
   if (!username) {
-    throw createError({ statusCode: 400, statusMessage: '缺少用户名参数' })
+    throw createError({ statusCode: 400, message: '缺少用户名参数' })
   }
 
   const octokit = useGitHub()
@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
     }
   } catch (err: any) {
     if (err.status === 404) {
-      throw createError({ statusCode: 404, statusMessage: `用户 ${username} 未找到` })
+      throw createError({ statusCode: 404, message: `用户 ${username} 未找到` })
     }
     throw err
   }

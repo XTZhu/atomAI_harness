@@ -20,9 +20,10 @@ export async function streamAI(
 ) {
   const config = useRuntimeConfig()
 
-  const apiBase = config.aiApiBase
-  const apiKey = config.aiApiKey
-  const model = config.aiModel || 'qwen-plus'
+  // process.env 优先（useRuntimeConfig 默认值在 server utils 中不可靠）
+  const apiBase = process.env.AI_API_BASE || config.aiApiBase
+  const apiKey = process.env.AI_API_KEY || config.aiApiKey
+  const model = process.env.AI_MODEL || config.aiModel || 'qwen-plus'
 
   if (!apiBase || !apiKey) {
     callbacks.onError(new Error('AI API 未配置，请在 .env 中设置 AI_API_BASE 和 AI_API_KEY'))

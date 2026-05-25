@@ -21,13 +21,10 @@
           <span class="brand-name">RepoLens</span>
           <span class="brand-tagline">AI-Powered Explorer</span>
         </div>
-        <el-button class="collapse-btn" text circle size="small" @click.stop="sidebarCollapsed = !sidebarCollapsed">
-          <el-icon :size="14"><Fold /></el-icon>
-        </el-button>
       </div>
 
-      <!-- 导航 -->
-      <div class="sidebar-nav" v-show="!sidebarCollapsed">
+      <!-- 导航（展开态） -->
+      <nav class="sidebar-nav" v-show="!sidebarCollapsed">
         <div class="nav-section">
           <span class="nav-label">探索</span>
           <el-menu :default-active="currentRoute" router class="nav-menu" background-color="transparent">
@@ -41,19 +38,10 @@
             </el-menu-item>
           </el-menu>
         </div>
-        <div class="nav-section">
-          <span class="nav-label">社区</span>
-          <el-menu :default-active="currentRoute" router class="nav-menu" background-color="transparent">
-            <el-menu-item index="/topics">
-              <el-icon><ChatLineSquare /></el-icon>
-              <span>话题广场</span>
-            </el-menu-item>
-          </el-menu>
-        </div>
-      </div>
+      </nav>
 
-      <!-- 折叠态 -->
-      <div v-show="sidebarCollapsed" class="nav-collapsed">
+      <!-- 导航（折叠态） -->
+      <nav v-show="sidebarCollapsed" class="nav-collapsed">
         <el-tooltip content="发现仓库" placement="right">
           <div class="nav-icon" :class="{ active: currentRoute === '/' }" @click="navigateTo('/')">
             <el-icon :size="22"><Search /></el-icon>
@@ -64,25 +52,26 @@
             <el-icon :size="22"><TrendCharts /></el-icon>
           </div>
         </el-tooltip>
-        <el-tooltip content="话题广场" placement="right">
-          <div class="nav-icon" :class="{ active: currentRoute === '/topics' }" @click="navigateTo('/topics')">
-            <el-icon :size="22"><ChatLineSquare /></el-icon>
-          </div>
-        </el-tooltip>
-      </div>
+      </nav>
 
-      <!-- 底部 -->
+      <!-- 底部操作区 -->
       <div class="sidebar-footer">
-        <el-tooltip :content="isDark ? '亮色模式' : '暗色模式'" placement="top" v-show="!sidebarCollapsed">
-          <el-button text @click="toggleDark" class="theme-btn">
-            <el-icon :size="16"><Moon v-if="!isDark" /><Sunny v-else /></el-icon>
-            <span>{{ isDark ? '亮色' : '暗色' }}</span>
-          </el-button>
+        <!-- 折叠开关 -->
+        <el-tooltip :content="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'" placement="right">
+          <button class="toggle-btn" @click="sidebarCollapsed = !sidebarCollapsed">
+            <el-icon :size="16" class="toggle-icon" :class="{ flipped: sidebarCollapsed }">
+              <DArrowLeft />
+            </el-icon>
+            <span v-show="!sidebarCollapsed" class="toggle-label">收起</span>
+          </button>
         </el-tooltip>
-        <el-tooltip :content="isDark ? '亮色模式' : '暗色模式'" placement="right" v-show="sidebarCollapsed">
-          <el-button text circle @click="toggleDark" class="theme-btn-icon">
+
+        <!-- 暗色模式 -->
+        <el-tooltip :content="isDark ? '亮色模式' : '暗色模式'" placement="right">
+          <button class="toggle-btn" @click="toggleDark" :class="{ 'is-icon-only': sidebarCollapsed }">
             <el-icon :size="16"><Moon v-if="!isDark" /><Sunny v-else /></el-icon>
-          </el-button>
+            <span v-show="!sidebarCollapsed" class="toggle-label">{{ isDark ? '亮色' : '暗色' }}</span>
+          </button>
         </el-tooltip>
       </div>
     </aside>
@@ -90,7 +79,6 @@
     <!-- ============ 主内容区 ============ -->
     <main class="main-area">
       <header class="top-bar">
-        <!-- 面包屑 -->
         <nav class="breadcrumb-nav">
           <span
             v-for="(crumb, i) in breadcrumbs"
@@ -108,7 +96,6 @@
         <div class="top-actions">
           <el-button type="primary" :icon="Cpu" size="default" class="ai-btn" @click="chatOpen = !chatOpen">
             AI 分析
-            <el-badge v-if="chatOpen" :value="1" class="ai-dot" />
           </el-button>
         </div>
       </header>
@@ -130,8 +117,8 @@
 
 <script setup lang="ts">
 import {
-  Search, Moon, Sunny, Fold, TrendCharts, ChatLineSquare, Cpu, ArrowRight,
-  HomeFilled, Folder,
+  Search, Moon, Sunny, TrendCharts, Cpu, ArrowRight,
+  HomeFilled, Folder, DArrowLeft,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -158,7 +145,7 @@ provide('openChat', (repoName: string, repoData?: any) => {
   chatOpen.value = true
 })
 
-// 当前仓库上下文（由 index.vue 注入）
+// 面包屑上下文（由页面注入）
 const currentRepoContext = ref<{ name: string; label: string } | null>(null)
 provide('setBreadcrumbRepo', (name: string, label: string) => {
   currentRepoContext.value = { name, label }
@@ -180,11 +167,8 @@ const breadcrumbs = computed(() => {
 
   if (path === '/trending') {
     items.push({ label: '趋势榜单', icon: TrendCharts })
-  } else if (path === '/topics') {
-    items.push({ label: '话题广场', icon: ChatLineSquare })
   } else if (path === '/') {
     items.push({ label: '发现仓库', icon: Search })
-    // 如果有选中的仓库上下文
     if (currentRepoContext.value) {
       items.push({ label: currentRepoContext.value.label, icon: Folder })
     }
@@ -198,11 +182,15 @@ onMounted(() => {
   const handler = (e: KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault()
-      // 聚焦搜索框？待实现
     }
     if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
       e.preventDefault()
       chatOpen.value = !chatOpen.value
+    }
+    // ⌘B 折叠侧边栏
+    if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+      e.preventDefault()
+      sidebarCollapsed.value = !sidebarCollapsed.value
     }
   }
   window.addEventListener('keydown', handler)
@@ -236,9 +224,8 @@ onMounted(() => {
 .brand {
   display: flex;
   align-items: center;
-  padding: 18px 16px;
+  padding: 18px 14px;
   gap: 10px;
-  position: relative;
   cursor: pointer;
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
@@ -273,17 +260,6 @@ onMounted(() => {
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
-
-.collapse-btn {
-  position: absolute;
-  right: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.brand:hover .collapse-btn { opacity: 1; }
 
 /* 导航 */
 .sidebar-nav {
@@ -349,23 +325,49 @@ onMounted(() => {
 
 /* 底部 */
 .sidebar-footer {
-  padding: 12px;
+  padding: 8px 10px 12px;
   border-top: 1px solid var(--el-border-color-lighter);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.theme-btn {
-  width: 100%;
-  justify-content: flex-start;
+.toggle-btn {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  font-size: 13px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
   color: var(--el-text-color-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
 }
 
-.theme-btn:hover { color: var(--el-color-primary); }
+.toggle-btn:hover {
+  background: var(--el-fill-color-light);
+  color: var(--el-color-primary);
+}
 
-.theme-btn-icon {
-  width: 100%;
-  color: var(--el-text-color-secondary);
+.toggle-btn.is-icon-only {
+  justify-content: center;
+  padding: 8px;
+}
+
+.toggle-icon {
+  transition: transform 0.25s ease;
+}
+
+.toggle-icon.flipped {
+  transform: rotate(180deg);
+}
+
+.toggle-label {
+  white-space: nowrap;
 }
 
 /* ============ 主内容区 ============ */
@@ -391,7 +393,6 @@ onMounted(() => {
   gap: 16px;
 }
 
-/* ============ 面包屑 ============ */
 .breadcrumb-nav {
   display: flex;
   align-items: center;
@@ -413,9 +414,7 @@ onMounted(() => {
   transition: all 0.15s;
 }
 
-.crumb-item.clickable {
-  cursor: pointer;
-}
+.crumb-item.clickable { cursor: pointer; }
 
 .crumb-item.clickable:hover {
   color: var(--el-color-primary);
@@ -429,10 +428,7 @@ onMounted(() => {
 
 .crumb-icon { flex-shrink: 0; }
 
-.crumb-sep {
-  margin: 0 2px;
-  color: var(--el-border-color);
-}
+.crumb-sep { margin: 0 2px; color: var(--el-border-color); }
 
 /* ============ 操作按钮 ============ */
 .top-actions {
@@ -456,8 +452,6 @@ onMounted(() => {
   box-shadow: 0 4px 16px rgba(99, 102, 241, 0.5);
   background: linear-gradient(135deg, var(--el-color-primary-light-1), #7c7ff6);
 }
-
-.ai-dot { margin-left: 4px; }
 
 /* ============ 页面内容 ============ */
 .page-body {

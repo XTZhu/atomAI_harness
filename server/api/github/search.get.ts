@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const perPage = Math.min(Number(query.per_page || 10), 30)
 
   if (!q.trim()) {
-    throw createError({ statusCode: 400, statusMessage: '搜索关键词不能为空' })
+    throw createError({ statusCode: 400, message: '搜索关键词不能为空' })
   }
 
   const octokit = useGitHub()
