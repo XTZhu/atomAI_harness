@@ -94,7 +94,14 @@
         </nav>
 
         <div class="top-actions">
-          <el-button type="primary" :icon="Cpu" size="default" class="ai-btn" @click="chatOpen = !chatOpen">
+          <el-button
+            type="primary"
+            :icon="Cpu"
+            size="default"
+            class="ai-btn"
+            :aria-label="chatOpen ? '关闭 AI 助手' : '打开 AI 助手 (⌘J)'"
+            @click="chatOpen = !chatOpen"
+          >
             AI 分析
           </el-button>
         </div>
@@ -191,12 +198,16 @@ const breadcrumbs = computed(() => {
   return items
 })
 
-// ===== 快捷键 =====
+// ===== 快捷键 + 无障碍 =====
 onMounted(() => {
   const handler = (e: KeyboardEvent) => {
+    // ⌘K 聚焦搜索
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault()
+      const input = document.querySelector('.hero-input input') as HTMLInputElement
+      input?.focus()
     }
+    // ⌘J 打开/关闭 AI 面板
     if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
       e.preventDefault()
       chatOpen.value = !chatOpen.value
@@ -205,6 +216,10 @@ onMounted(() => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
       e.preventDefault()
       sidebarCollapsed.value = !sidebarCollapsed.value
+    }
+    // Escape 关闭 AI 面板
+    if (e.key === 'Escape' && chatOpen.value) {
+      chatOpen.value = false
     }
   }
   window.addEventListener('keydown', handler)
