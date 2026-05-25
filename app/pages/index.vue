@@ -133,13 +133,34 @@
     </section>
 
     <!-- ============ 仓库详情（覆盖搜索区） ============ -->
-    <section v-if="selectedRepo" class="detail-section">
+    <section v-if="selectedRepo || detailLoading" class="detail-section">
       <div class="detail-back">
         <el-button text @click="resetSearch">
           <el-icon><ArrowLeft /></el-icon> 返回搜索结果
         </el-button>
       </div>
-      <RepoDetailCard :repo="selectedRepo" @chat="openChat" />
+      <!-- 骨架屏加载 -->
+      <div v-if="detailLoading" class="detail-skeleton-card">
+        <el-skeleton animated :throttle="300">
+          <template #template>
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px">
+              <el-skeleton-item variant="circle" style="width:40px;height:40px" />
+              <div style="flex:1">
+                <el-skeleton-item variant="text" style="width:40%" />
+                <el-skeleton-item variant="text" style="width:60%;margin-top:6px" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0">
+              <el-skeleton-item v-for="i in 4" :key="i" variant="rect" style="height:60px;border-radius:8px" />
+            </div>
+            <el-skeleton-item variant="text" style="width:100%;margin-bottom:8px" />
+            <el-skeleton-item variant="text" style="width:100%;margin-bottom:8px" />
+            <el-skeleton-item variant="text" style="width:60%" />
+          </template>
+        </el-skeleton>
+      </div>
+      <!-- 详情卡片 -->
+      <RepoDetailCard v-if="selectedRepo && !detailLoading" :repo="selectedRepo" @chat="openChat" />
     </section>
 
     <!-- ============ 未搜索时的欢迎态 ============ -->
@@ -197,6 +218,7 @@ const searchQuery = ref('')
 const loading = ref(false)
 const page = ref(1)
 const selectedRepo = ref<any>(null)
+const detailLoading = ref(false)
 const recentRepos = ref<any[]>([])
 
 // 输入框 Ref
@@ -294,9 +316,12 @@ const quickSearch = (q: string) => {
 // ===== 仓库选择 =====
 const selectRepo = async (repo: any) => {
   const name = repo.name || repo.full_name
+  detailLoading.value = true
+  selectedRepo.value = null
   try {
     const data = await $fetch(`/api/github/repo/${name}`)
     selectedRepo.value = data
+    detailLoading.value = false
     setBreadcrumb(name, name)
     addRecent({ name, owner: repo.owner || data.owner })
     // 滚动到详情卡片位置
@@ -318,13 +343,17 @@ const openChat = (repo: any) => {
 // 从趋势/搜索结果打开 AI 面板（先获取详情再打开）
 const handleChatFromTrending = async (item: any) => {
   const name = item.name || item.full_name
+  detailLoading.value = true
+  selectedRepo.value = null
   try {
     const data = await $fetch(`/api/github/repo/${name}`)
     selectedRepo.value = data
+    detailLoading.value = false
     setBreadcrumb(name, name)
     addRecent({ name, owner: item.owner || data.owner })
     openChatPanel(name, data)
   } catch (err: any) {
+    detailLoading.value = false
     ElMessage.error(err.message || '获取仓库详情失败')
     openChatPanel(name, null)
   }
@@ -622,6 +651,13 @@ const onSearchBlur = () => { isFocused.value = false }
   padding: 0 24px 32px;
   max-width: 900px;
   margin: 0 auto;
+}
+
+.detail-skeleton-card {
+  padding: 24px;
+  background: var(--el-bg-color);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .detail-back {
