@@ -91,7 +91,7 @@
       </div>
 
       <!-- 搜索结果列表 -->
-      <div v-if="results.length && !selectedRepo" class="results-grid">
+      <div v-if="results.length && !selectedRepo && !searchError" class="results-grid">
         <div
           v-for="repo in results"
           :key="repo.id"
@@ -132,6 +132,18 @@
         <el-button :loading="loading" @click="loadMore" size="default">
           加载更多仓库
         </el-button>
+      </div>
+
+      <!-- 无结果 -->
+      <div v-if="searched && !searchError && !results.length && !loading" class="search-empty">
+        <el-empty description="未找到匹配的仓库">
+          <template #image>
+            <el-icon :size="56" color="var(--el-text-color-placeholder)"><FolderOpened /></el-icon>
+          </template>
+          <el-button @click="keyword = ''; searchInputRef?.focus()" type="primary" plain>
+            换个关键词试试
+          </el-button>
+        </el-empty>
       </div>
     </section>
 
@@ -199,7 +211,7 @@
 <script setup lang="ts">
 import {
   Search, Star, Share, Clock, Folder, Cpu, Setting,
-  Close, ArrowLeft, ArrowRight, TrendCharts,
+  Close, ArrowLeft, ArrowRight, TrendCharts, FolderOpened,
 } from '@element-plus/icons-vue'
 
 definePageMeta({ layout: 'default' })
@@ -649,6 +661,10 @@ const onSearchBlur = () => { isFocused.value = false }
 .load-more {
   text-align: center;
   margin-top: 20px;
+}
+
+.search-empty {
+  padding: 48px 0;
 }
 
 /* ============ 详情区 ============ */
