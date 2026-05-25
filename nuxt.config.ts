@@ -1,0 +1,43 @@
+// https://nuxt.com/docs/api/configuration/nuxt-config
+export default defineNuxtConfig({
+  compatibilityDate: '2025-07-15',
+  devtools: { enabled: true },
+
+  modules: ['@element-plus/nuxt'],
+
+  elementPlus: {
+    icon: 'ElIcon',
+    importStyle: 'css',
+    themes: ['dark'],
+  },
+
+  app: {
+    head: {
+      title: 'RepoLens — AI-Powered GitHub Explorer',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: 'RepoLens — 用 AI 洞察开源世界。搜索 GitHub 仓库，深入理解代码架构。' },
+      ],
+    },
+  },
+
+  css: ['element-plus/theme-chalk/dark/css-vars.css'],
+
+  runtimeConfig: {
+    githubToken: '',
+    aiApiBase: '',
+    aiApiKey: '',
+    aiModel: 'qwen-plus',
+    aiSystemPrompt: '',
+    public: {
+      apiBase: '/api',
+    },
+  },
+
+  vite: {
+    optimizeDeps: {
+      include: ['dayjs/plugin/*.js'],
+    },
+  },
+})
