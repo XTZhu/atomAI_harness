@@ -18,6 +18,14 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'RepoLens — 用 AI 洞察开源世界。搜索 GitHub 仓库，深入理解代码架构。' },
+        { property: 'og:title', content: 'RepoLens — AI-Powered GitHub Explorer' },
+        { property: 'og:description', content: '用 AI 洞察开源世界。搜索 GitHub 仓库，深入理解代码架构。' },
+        { property: 'og:type', content: 'website' },
+        { name: 'twitter:card', content: 'summary' },
+      ],
+      link: [
+        { rel: 'dns-prefetch', href: 'https://avatars.githubusercontent.com' },
+        { rel: 'dns-prefetch', href: 'https://api.github.com' },
       ],
     },
   },
@@ -39,5 +47,19 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: ['dayjs/plugin/*.js'],
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'element-plus': ['element-plus'],
+            'highlight': ['highlight.js'],
+          },
+        },
+      },
+    },
+  },
+
+  experimental: {
+    viewTransition: true,
   },
 })
