@@ -144,8 +144,10 @@
 <script setup lang="ts">
 import {
   Search, Moon, Sunny, TrendCharts, Cpu, ArrowRight,
-  HomeFilled, Folder, DArrowLeft, Menu, Close,
+  Folder, DArrowLeft, Menu, Close,
 } from '@element-plus/icons-vue'
+import type { GitHubRepoDetail } from '~/types'
+import type { Component } from 'vue'
 
 const route = useRoute()
 const currentRoute = computed(() => route.path)
@@ -183,9 +185,9 @@ const toggleDark = () => {
 // ===== AI 面板 =====
 const chatOpen = ref(false)
 const globalChatRepo = ref<string | null>(null)
-const globalChatRepoData = ref<any>(null)
+const globalChatRepoData = ref<GitHubRepoDetail | null>(null)
 
-provide('openChat', (repoName: string, repoData?: any) => {
+provide('openChat', (repoName: string, repoData?: GitHubRepoDetail) => {
   globalChatRepo.value = repoName
   globalChatRepoData.value = repoData || null
   chatOpen.value = true
@@ -236,7 +238,7 @@ provide('clearBreadcrumbRepo', () => {
 
 // ===== 动态面包屑 =====
 const breadcrumbs = computed(() => {
-  const items: { label: string; path?: string; icon?: any }[] = [
+  const items: { label: string; path?: string; icon?: Component }[] = [
     { label: 'RepoLens', path: '/', icon: () => h('svg', { viewBox: '0 0 24 24', fill: 'currentColor', style: 'width:14px;height:14px' }, [
       h('path', { d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z' }),
       h('polyline', { points: '9 22 9 12 15 12 15 22', stroke: 'currentColor', fill: 'none', 'stroke-width': '2' }),

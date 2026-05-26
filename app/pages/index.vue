@@ -197,7 +197,7 @@ const route = useRoute()
 // ===== 上下文注入 =====
 const setBreadcrumb = inject<(name: string, label: string) => void>('setBreadcrumbRepo', () => {})
 const clearBreadcrumb = inject<() => void>('clearBreadcrumbRepo', () => {})
-const openChatPanel = inject<(name: string, data?: any) => void>('openChat', () => {})
+const openChatPanel = inject<(name: string, data?: GitHubRepoDetail) => void>('openChat', () => {})
 
 // ===== 状态 =====
 const keyword = ref('')
@@ -335,7 +335,7 @@ const selectRepo = async (repo: GitHubRepo) => {
   }
 }
 
-const openChat = (repo: any) => {
+const openChat = (repo: GitHubRepoDetail) => {
   openChatPanel(repo.name || repo.full_name, selectedRepo.value)
 }
 

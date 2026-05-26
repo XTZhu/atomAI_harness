@@ -36,13 +36,14 @@
 
 <script setup lang="ts">
 import { TrendCharts, Folder } from '@element-plus/icons-vue'
+import type { GitHubRepo, GitHubRepoDetail } from '~/types'
 
 definePageMeta({ layout: 'default' })
 
-const selectedRepo = ref<any>(null)
-const openChatPanel = inject<(name: string, data?: any) => void>('openChat', () => {})
+const selectedRepo = ref<GitHubRepoDetail | null>(null)
+const openChatPanel = inject<(name: string, data?: GitHubRepoDetail) => void>('openChat', () => {})
 
-const onRepoSelect = async (item: any) => {
+const onRepoSelect = async (item: GitHubRepo) => {
   selectedRepo.value = null
   try {
     const data = await $fetch(`/api/github/repo/${item.name}`)
@@ -59,7 +60,7 @@ const onRepoSelect = async (item: any) => {
   }
 }
 
-const onChat = async (item: any) => {
+const onChat = async (item: GitHubRepo) => {
   try {
     const data = selectedRepo.value?.name === item.name
       ? selectedRepo.value
