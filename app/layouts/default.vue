@@ -131,13 +131,15 @@
     </main>
 
     <!-- AI 聊天面板 -->
-    <AIChatPanel
-      :is-open="chatOpen"
-      :repo-context="globalChatRepo"
-      :repo-data="globalChatRepoData"
-      @close="handleChatClose"
-      @clear-context="handleClearContext"
-    />
+    <ClientOnly>
+      <AIChatPanel
+        :is-open="chatOpen"
+        :repo-context="globalChatRepo"
+        :repo-data="globalChatRepoData"
+        @close="handleChatClose"
+        @clear-context="handleClearContext"
+      />
+    </ClientOnly>
   </div>
 </template>
 
@@ -152,10 +154,14 @@ import type { Component } from 'vue'
 const route = useRoute()
 const currentRoute = computed(() => route.path)
 
-import { useMediaQuery } from '@vueuse/core'
-
-// ===== 移动端检测（vueuse useMediaQuery） =====
-const isMobile = useMediaQuery('(max-width: 767px)')
+// ===== 移动端检测 =====
+const isMobile = ref(false)
+onMounted(() => {
+  const check = () => { isMobile.value = window.innerWidth < 768 }
+  check()
+  window.addEventListener('resize', check)
+  onUnmounted(() => window.removeEventListener('resize', check))
+})
 
 // ===== 侧边栏 =====
 const sidebarCollapsed = ref(false)

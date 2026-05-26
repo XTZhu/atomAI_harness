@@ -41,7 +41,7 @@
             @keyup.enter="doRepoSearch"
           >
             <template #prefix>
-              <el-icon :size="14"><Search /></el-icon>
+              <el-icon :size="14"><component :is="Search" /></el-icon>
             </template>
           </el-input>
         </div>
@@ -240,13 +240,16 @@ const panelState = computed<PanelState>(() => {
 
 // ===== 多仓库对话存储（vueuse useStorage 自动持久化）=====
 const conversations = useStorage<Record<string, ChatMessage[]>>('repolens:ai-convs', {})
+
+// SSR 兼容：确保 conversations.value 不为 undefined
+const safeConversations = computed(() => conversations.value || {})
 const activeSessionKey = ref<string | null>(null)
 const messages = ref<ChatMessage[]>([])
 
 const saveCurrent = () => {
   const key = activeSessionKey.value
   if (key && messages.value.length > 0) {
-    conversations.value[key] = [...messages.value]
+    safeConversations.value[key] = [...messages.value]
   }
 }
 
@@ -254,7 +257,7 @@ const loadRepo = (key: string) => {
   if (streaming.value) return
   saveCurrent()
   activeSessionKey.value = key
-  messages.value = [...(conversations.value[key] || [])]
+  messages.value = [...(safeConversations.value[key] || [])]
   streamContent.value = ''
 }
 
@@ -303,7 +306,7 @@ const onSearchResultClick = async (repo: GitHubRepo) => {
 // ===== 最近仓库列表 =====
 const recentRepos = computed(() => {
   const list: { key: string; count: number }[] = []
-  for (const [key, msgs] of Object.entries(conversations.value)) {
+  for (const [key, msgs] of Object.entries(safeConversations.value)) {
     if (key !== '__default__' && msgs.length > 0) {
       list.push({ key, count: msgs.length })
     }
