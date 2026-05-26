@@ -1,5 +1,5 @@
 <template>
-  <div ref="containerRef" class="markdown-body" v-html="renderedHtml" @click="onLinkClick"></div>
+  <div ref="containerRef" class="markdown-body" @click="onLinkClick" v-html="renderedHtml" />
 </template>
 
 <script setup lang="ts">
@@ -22,7 +22,9 @@ marked.setOptions({
     if (lang && hljs.getLanguage(lang)) {
       try {
         return hljs.highlight(code, { language: lang }).value
-      } catch { /* fallback */ }
+      } catch {
+        /* fallback */
+      }
     }
     try {
       return hljs.highlightAuto(code).value
@@ -38,14 +40,11 @@ const renderedHtml = computed(() => {
     let html = marked.parse(props.content) as string
     // 将相对图片 src 转为 GitHub 绝对 URL
     if (props.repoName) {
-      html = html.replace(
-        /<img\s+[^>]*src="(?!https?:\/\/)([^"]+)"/gi,
-        (match, src) => {
-          const path = src.startsWith('/') ? src : `/${src}`
-          const newSrc = `https://raw.githubusercontent.com/${props.repoName}/main${path}`
-          return match.replace(`src="${src}"`, `src="${newSrc}"`)
-        }
-      )
+      html = html.replace(/<img\s+[^>]*src="(?!https?:\/\/)([^"]+)"/gi, (match, src) => {
+        const path = src.startsWith('/') ? src : `/${src}`
+        const newSrc = `https://raw.githubusercontent.com/${props.repoName}/main${path}`
+        return match.replace(`src="${src}"`, `src="${newSrc}"`)
+      })
     }
     return html
   } catch {
@@ -107,9 +106,17 @@ const onLinkClick = (e: MouseEvent) => {
   line-height: 1.4;
 }
 
-.markdown-body :deep(h1) { font-size: 1.5em; }
-.markdown-body :deep(h2) { font-size: 1.3em; border-bottom: 1px solid var(--el-border-color-lighter); padding-bottom: 6px; }
-.markdown-body :deep(h3) { font-size: 1.15em; }
+.markdown-body :deep(h1) {
+  font-size: 1.5em;
+}
+.markdown-body :deep(h2) {
+  font-size: 1.3em;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  padding-bottom: 6px;
+}
+.markdown-body :deep(h3) {
+  font-size: 1.15em;
+}
 
 .markdown-body :deep(p) {
   margin: 0 0 10px;
@@ -208,12 +215,29 @@ const onLinkClick = (e: MouseEvent) => {
 }
 
 /* highlight.js 主题覆盖 */
-.markdown-body :deep(.hljs-keyword) { color: #cba6f7; }
-.markdown-body :deep(.hljs-string) { color: #a6e3a1; }
-.markdown-body :deep(.hljs-comment) { color: #6c7086; font-style: italic; }
-.markdown-body :deep(.hljs-function) { color: #89b4fa; }
-.markdown-body :deep(.hljs-number) { color: #fab387; }
-.markdown-body :deep(.hljs-title) { color: #89b4fa; }
-.markdown-body :deep(.hljs-type) { color: #f9e2af; }
-.markdown-body :deep(.hljs-built_in) { color: #f38ba8; }
+.markdown-body :deep(.hljs-keyword) {
+  color: #cba6f7;
+}
+.markdown-body :deep(.hljs-string) {
+  color: #a6e3a1;
+}
+.markdown-body :deep(.hljs-comment) {
+  color: #6c7086;
+  font-style: italic;
+}
+.markdown-body :deep(.hljs-function) {
+  color: #89b4fa;
+}
+.markdown-body :deep(.hljs-number) {
+  color: #fab387;
+}
+.markdown-body :deep(.hljs-title) {
+  color: #89b4fa;
+}
+.markdown-body :deep(.hljs-type) {
+  color: #f9e2af;
+}
+.markdown-body :deep(.hljs-built_in) {
+  color: #f38ba8;
+}
 </style>

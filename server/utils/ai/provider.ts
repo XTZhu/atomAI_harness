@@ -139,7 +139,9 @@ export async function streamAI(
             fullText += content
             callbacks.onToken(content)
           }
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
     }
     callbacks.onDone(fullText)

@@ -2,11 +2,9 @@
   <div class="dashboard">
     <!-- ============ 搜索 Hero ============ -->
     <section class="search-hero">
-      <div class="hero-glow"></div>
+      <div class="hero-glow" />
       <div class="hero-content">
-        <h1 class="hero-heading">
-          探索<span class="hero-accent">开源</span>世界
-        </h1>
+        <h1 class="hero-heading">探索<span class="hero-accent">开源</span>世界</h1>
         <p class="hero-desc">通过 AI 洞察，深入理解每一行代码</p>
 
         <div class="hero-search-box">
@@ -21,7 +19,9 @@
             @blur="onSearchBlur"
           >
             <template #prefix>
-              <el-icon :size="18" class="search-icon"><Search /></el-icon>
+              <el-icon :size="18" class="search-icon">
+                <Search />
+              </el-icon>
             </template>
             <template #append>
               <el-button
@@ -55,19 +55,27 @@
         <!-- 快捷入口 -->
         <div class="quick-entries">
           <div class="quick-entry" @click="quickSearch('stars:>10000')">
-            <el-icon :size="16"><Star /></el-icon>
+            <el-icon :size="16">
+              <Star />
+            </el-icon>
             <span>万星项目</span>
           </div>
           <div class="quick-entry" @click="quickSearch('language:rust')">
-            <el-icon :size="16"><Setting /></el-icon>
+            <el-icon :size="16">
+              <Setting />
+            </el-icon>
             <span>Rust 生态</span>
           </div>
           <div class="quick-entry" @click="quickSearch('machine learning')">
-            <el-icon :size="16"><Cpu /></el-icon>
+            <el-icon :size="16">
+              <Cpu />
+            </el-icon>
             <span>AI/ML 项目</span>
           </div>
           <div class="quick-entry" @click="navigateTo('/trending')">
-            <el-icon :size="16"><TrendCharts /></el-icon>
+            <el-icon :size="16">
+              <TrendCharts />
+            </el-icon>
             <span>趋势榜单</span>
           </div>
         </div>
@@ -83,7 +91,12 @@
       <div v-if="results.length && !selectedRepo" class="search-summary">
         <div class="summary-info">
           <el-icon><Search /></el-icon>
-          <span>找到 <strong>{{ totalCount.toLocaleString() }}</strong> 个仓库 匹配 "<em>{{ searchQuery }}</em>"</span>
+          <span
+            >找到 <strong>{{ totalCount.toLocaleString() }}</strong> 个仓库 匹配 "<em>{{
+              searchQuery
+            }}</em
+            >"</span
+          >
         </div>
         <el-button text size="small" @click="resetSearch">
           <el-icon><Close /></el-icon> 清除
@@ -104,18 +117,25 @@
 
       <!-- 加载更多 -->
       <div v-if="totalCount > results.length && !selectedRepo" class="load-more">
-        <el-button :loading="loading" @click="loadMore" size="default">
-          加载更多仓库
-        </el-button>
+        <el-button :loading="loading" size="default" @click="loadMore"> 加载更多仓库 </el-button>
       </div>
 
       <!-- 无结果 -->
       <div v-if="searched && !searchError && !results.length && !loading" class="search-empty">
         <el-empty description="未找到匹配的仓库">
           <template #image>
-            <el-icon :size="56" color="var(--el-text-color-placeholder)"><FolderOpened /></el-icon>
+            <el-icon :size="56" color="var(--el-text-color-placeholder)">
+              <FolderOpened />
+            </el-icon>
           </template>
-          <el-button @click="keyword = ''; searchInputRef?.focus()" type="primary" plain>
+          <el-button
+            type="primary"
+            plain
+            @click="
+              keyword = ''
+              searchInputRef?.focus()
+            "
+          >
             换个关键词试试
           </el-button>
         </el-empty>
@@ -133,19 +153,31 @@
       <div v-if="detailLoading" class="detail-skeleton-card">
         <el-skeleton animated :throttle="300">
           <template #template>
-            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px">
-              <el-skeleton-item variant="circle" style="width:40px;height:40px" />
-              <div style="flex:1">
-                <el-skeleton-item variant="text" style="width:40%" />
-                <el-skeleton-item variant="text" style="width:60%;margin-top:6px" />
+            <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px">
+              <el-skeleton-item variant="circle" style="width: 40px; height: 40px" />
+              <div style="flex: 1">
+                <el-skeleton-item variant="text" style="width: 40%" />
+                <el-skeleton-item variant="text" style="width: 60%; margin-top: 6px" />
               </div>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0">
-              <el-skeleton-item v-for="i in 4" :key="i" variant="rect" style="height:60px;border-radius:8px" />
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+                margin: 16px 0;
+              "
+            >
+              <el-skeleton-item
+                v-for="i in 4"
+                :key="i"
+                variant="rect"
+                style="height: 60px; border-radius: 8px"
+              />
             </div>
-            <el-skeleton-item variant="text" style="width:100%;margin-bottom:8px" />
-            <el-skeleton-item variant="text" style="width:100%;margin-bottom:8px" />
-            <el-skeleton-item variant="text" style="width:60%" />
+            <el-skeleton-item variant="text" style="width: 100%; margin-bottom: 8px" />
+            <el-skeleton-item variant="text" style="width: 100%; margin-bottom: 8px" />
+            <el-skeleton-item variant="text" style="width: 60%" />
           </template>
         </el-skeleton>
       </div>
@@ -174,19 +206,26 @@
             >
               <el-avatar :size="22" :src="repo.owner?.avatar" />
               <span class="recent-name">{{ repo.name }}</span>
-              <el-icon :size="12" class="recent-arrow"><ArrowRight /></el-icon>
+              <el-icon :size="12" class="recent-arrow">
+                <ArrowRight />
+              </el-icon>
             </div>
           </div>
         </el-card>
       </div>
-
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import {
-  Search, Setting, Close, ArrowLeft, ArrowRight, TrendCharts, FolderOpened,
+  Search,
+  Setting,
+  Close,
+  ArrowLeft,
+  ArrowRight,
+  TrendCharts,
+  FolderOpened,
 } from '@element-plus/icons-vue'
 import type { GitHubRepo, GitHubRepoDetail } from '~/types'
 
@@ -214,7 +253,12 @@ const detailLoading = ref(false)
 const recentRepos = ref<{ name: string; owner?: { avatar: string } }[]>([])
 
 onMounted(() => {
-  try { const r = localStorage.getItem('repolens:recent'); if (r) recentRepos.value = JSON.parse(r) } catch { /* */ }
+  try {
+    const r = localStorage.getItem('repolens:recent')
+    if (r) recentRepos.value = JSON.parse(r)
+  } catch {
+    /* */
+  }
 })
 
 // 输入框 Ref
@@ -369,17 +413,22 @@ const handleChatFromResult = async (repo: GitHubRepo) => {
 
 // ===== 最近浏览 =====
 const addRecent = (repo: { name: string; owner?: { avatar: string } }) => {
-  recentRepos.value = [
-    repo,
-    ...recentRepos.value.filter(r => r.name !== repo.name),
-  ].slice(0, 6)
-  try { localStorage.setItem('repolens:recent', JSON.stringify(recentRepos.value)) } catch { /* */ }
+  recentRepos.value = [repo, ...recentRepos.value.filter((r) => r.name !== repo.name)].slice(0, 6)
+  try {
+    localStorage.setItem('repolens:recent', JSON.stringify(recentRepos.value))
+  } catch {
+    /* */
+  }
 }
 
 // ===== 搜索框焦点效果 =====
 const isFocused = ref(false)
-const onSearchFocus = () => { isFocused.value = true }
-const onSearchBlur = () => { isFocused.value = false }
+const onSearchFocus = () => {
+  isFocused.value = true
+}
+const onSearchBlur = () => {
+  isFocused.value = false
+}
 </script>
 
 <style scoped>
@@ -543,7 +592,9 @@ const onSearchBlur = () => { isFocused.value = false }
   gap: 6px;
 }
 
-.summary-info strong { color: var(--el-color-primary); }
+.summary-info strong {
+  color: var(--el-color-primary);
+}
 
 .results-grid {
   display: grid;
@@ -645,7 +696,9 @@ const onSearchBlur = () => { isFocused.value = false }
   transition: opacity 0.15s;
 }
 
-.recent-item:hover .recent-arrow { opacity: 1; }
+.recent-item:hover .recent-arrow {
+  opacity: 1;
+}
 
 /* ============ 响应式 ============ */
 @media (max-width: 900px) {
@@ -655,21 +708,48 @@ const onSearchBlur = () => { isFocused.value = false }
   .results-grid {
     grid-template-columns: 1fr;
   }
-  .hero-heading { font-size: 24px; }
-  .hero-desc { font-size: 13px; }
-  .hero-search-box { max-width: 100%; }
-  .hot-tags { gap: 4px; }
-  .hot-tag { font-size: 11px; padding: 0 8px; }
-  .quick-entry { font-size: 12px; padding: 6px 10px; }
-  .detail-section { padding: 0 12px 24px; }
-  .results-section { padding: 0 12px 24px; }
-  .explore-section { padding: 0 12px 24px; }
+  .hero-heading {
+    font-size: 24px;
+  }
+  .hero-desc {
+    font-size: 13px;
+  }
+  .hero-search-box {
+    max-width: 100%;
+  }
+  .hot-tags {
+    gap: 4px;
+  }
+  .hot-tag {
+    font-size: 11px;
+    padding: 0 8px;
+  }
+  .quick-entry {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  .detail-section {
+    padding: 0 12px 24px;
+  }
+  .results-section {
+    padding: 0 12px 24px;
+  }
+  .explore-section {
+    padding: 0 12px 24px;
+  }
 }
 
 @media (max-width: 768px) {
-  .hero-heading { font-size: 22px; }
-  .search-hero { padding: 32px 16px 32px; }
-  .hero-desc { font-size: 12px; margin-bottom: 20px; }
+  .hero-heading {
+    font-size: 22px;
+  }
+  .search-hero {
+    padding: 32px 16px 32px;
+  }
+  .hero-desc {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
 
   /* 快捷入口双列 */
   .quick-entries {
@@ -685,8 +765,12 @@ const onSearchBlur = () => { isFocused.value = false }
   }
 
   /* 结果卡片：隐藏叠层，显示底部操作栏 */
-  .result-overlay { display: none; }
-  .result-mobile-actions { display: flex; }
+  .result-overlay {
+    display: none;
+  }
+  .result-mobile-actions {
+    display: flex;
+  }
 
   .result-card:hover {
     transform: none;

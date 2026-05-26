@@ -5,7 +5,9 @@
       <!-- 左栏：Hero + 详情 -->
       <div class="trending-main">
         <div class="trending-hero">
-          <el-icon :size="32" color="#f59e0b"><TrendCharts /></el-icon>
+          <el-icon :size="32" color="#f59e0b">
+            <TrendCharts />
+          </el-icon>
           <div>
             <h2>GitHub 趋势榜单</h2>
             <p>发现今日最受瞩目的开源项目</p>
@@ -13,15 +15,13 @@
         </div>
 
         <!-- 选中仓库的详情（直接展示在 Hero 下方） -->
-        <RepoDetailCard
-          v-if="selectedRepo"
-          :repo="selectedRepo"
-          @chat="onChat"
-        />
+        <RepoDetailCard v-if="selectedRepo" :repo="selectedRepo" @chat="onChat" />
 
         <!-- 未选中时的占位提示 -->
         <div v-else class="trending-placeholder">
-          <el-icon :size="28"><Folder /></el-icon>
+          <el-icon :size="28">
+            <Folder />
+          </el-icon>
           <span>点击右侧列表中的仓库查看详情</span>
         </div>
       </div>
@@ -62,9 +62,10 @@ const onRepoSelect = async (item: GitHubRepo) => {
 
 const onChat = async (item: GitHubRepo) => {
   try {
-    const data = selectedRepo.value?.name === item.name
-      ? selectedRepo.value
-      : await $fetch(`/api/github/repo/${item.name}`)
+    const data =
+      selectedRepo.value?.name === item.name
+        ? selectedRepo.value
+        : await $fetch(`/api/github/repo/${item.name}`)
     if (!selectedRepo.value || selectedRepo.value.name !== item.name) {
       selectedRepo.value = data
     }
@@ -149,7 +150,11 @@ const onChat = async (item: GitHubRepo) => {
     align-items: flex-start;
     gap: 6px;
   }
-  .trending-hero h2 { font-size: 18px; }
-  .trending-page { padding: 0 8px; }
+  .trending-hero h2 {
+    font-size: 18px;
+  }
+  .trending-page {
+    padding: 0 8px;
+  }
 }
 </style>

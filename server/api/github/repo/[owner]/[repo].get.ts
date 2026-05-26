@@ -28,9 +28,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const repoData = repoResult.value.data
-  const readmeContent = readmeResult.status === 'fulfilled'
-    ? Buffer.from(readmeResult.value.data.content, 'base64').toString('utf-8')
-    : null
+  const readmeContent =
+    readmeResult.status === 'fulfilled'
+      ? Buffer.from(readmeResult.value.data.content, 'base64').toString('utf-8')
+      : null
 
   const result = {
     id: repoData.id,

@@ -57,9 +57,18 @@ const hotTags = ref([
 ])
 
 const recommendedTags = [
-  'Vue3', 'Nuxt4', 'TypeScript', 'ElementPlus', 'TailwindCSS',
-  'DevOps', '微服务', '跨端开发', '性能优化', 'UI设计',
-  '面试经验', '团队协作',
+  'Vue3',
+  'Nuxt4',
+  'TypeScript',
+  'ElementPlus',
+  'TailwindCSS',
+  'DevOps',
+  '微服务',
+  '跨端开发',
+  '性能优化',
+  'UI设计',
+  '面试经验',
+  '团队协作',
 ]
 
 const onTagClick = (tag: string) => {

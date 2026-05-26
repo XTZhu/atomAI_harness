@@ -3,18 +3,21 @@
     <!-- ============ 侧边栏 ============ -->
     <!-- 移动端遮罩 -->
     <div v-if="isMobile && sidebarOpen" class="sidebar-overlay" @click="closeSidebar" />
-    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed && !isMobile, open: isMobile && sidebarOpen }">
+    <aside
+      class="sidebar"
+      :class="{ collapsed: sidebarCollapsed && !isMobile, open: isMobile && sidebarOpen }"
+    >
       <!-- 品牌区 -->
       <div class="brand" @click="navigateTo('/')">
         <div class="brand-icon">
           <svg viewBox="0 0 40 40" fill="none" class="brand-svg">
-            <rect width="40" height="40" rx="10" fill="url(#bg)"/>
-            <path d="M12 16 L20 8 L28 16 L28 30 L20 24 L12 30 Z" fill="white" opacity="0.9"/>
-            <circle cx="20" cy="14" r="3" fill="white"/>
+            <rect width="40" height="40" rx="10" fill="url(#bg)" />
+            <path d="M12 16 L20 8 L28 16 L28 30 L20 24 L12 30 Z" fill="white" opacity="0.9" />
+            <circle cx="20" cy="14" r="3" fill="white" />
             <defs>
               <linearGradient id="bg" x1="0" y1="0" x2="40" y2="40">
-                <stop offset="0%" stop-color="#6366f1"/>
-                <stop offset="100%" stop-color="#8b5cf6"/>
+                <stop offset="0%" stop-color="#6366f1" />
+                <stop offset="100%" stop-color="#8b5cf6" />
               </linearGradient>
             </defs>
           </svg>
@@ -24,16 +27,29 @@
           <span class="brand-tagline">AI-Powered Explorer</span>
         </div>
         <!-- 移动端关闭按钮 -->
-        <button v-if="isMobile" class="sidebar-close-btn" @click.stop="closeSidebar" aria-label="关闭菜单">
-          <el-icon :size="20"><Close /></el-icon>
+        <button
+          v-if="isMobile"
+          class="sidebar-close-btn"
+          aria-label="关闭菜单"
+          @click.stop="closeSidebar"
+        >
+          <el-icon :size="20">
+            <Close />
+          </el-icon>
         </button>
       </div>
 
       <!--  导航（展开态） -->
-      <nav class="sidebar-nav" v-show="!sidebarCollapsed || isMobile">
+      <nav v-show="!sidebarCollapsed || isMobile" class="sidebar-nav">
         <div class="nav-section">
           <span class="nav-label">探索</span>
-          <el-menu :default-active="currentRoute" router class="nav-menu" background-color="transparent" @select="isMobile && closeSidebar()">
+          <el-menu
+            :default-active="currentRoute"
+            router
+            class="nav-menu"
+            background-color="transparent"
+            @select="isMobile && closeSidebar()"
+          >
             <el-menu-item index="/">
               <el-icon><Search /></el-icon>
               <span>发现仓库</span>
@@ -50,12 +66,20 @@
       <nav v-show="sidebarCollapsed && !isMobile" class="nav-collapsed">
         <el-tooltip content="发现仓库" placement="right">
           <div class="nav-icon" :class="{ active: currentRoute === '/' }" @click="navigateTo('/')">
-            <el-icon :size="22"><Search /></el-icon>
+            <el-icon :size="22">
+              <Search />
+            </el-icon>
           </div>
         </el-tooltip>
         <el-tooltip content="趋势榜单" placement="right">
-          <div class="nav-icon" :class="{ active: currentRoute === '/trending' }" @click="navigateTo('/trending')">
-            <el-icon :size="22"><TrendCharts /></el-icon>
+          <div
+            class="nav-icon"
+            :class="{ active: currentRoute === '/trending' }"
+            @click="navigateTo('/trending')"
+          >
+            <el-icon :size="22">
+              <TrendCharts />
+            </el-icon>
           </div>
         </el-tooltip>
       </nav>
@@ -63,7 +87,11 @@
       <!-- 底部操作区 -->
       <div class="sidebar-footer">
         <!-- 折叠开关（仅桌面端） -->
-        <el-tooltip v-if="!isMobile" :content="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'" placement="right">
+        <el-tooltip
+          v-if="!isMobile"
+          :content="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
+          placement="right"
+        >
           <button class="toggle-btn" @click="toggleSidebar">
             <el-icon :size="16" class="toggle-icon" :class="{ flipped: sidebarCollapsed }">
               <DArrowLeft />
@@ -74,9 +102,15 @@
 
         <!-- 暗色模式 -->
         <el-tooltip :content="isDark ? '亮色模式' : '暗色模式'" placement="right">
-          <button class="toggle-btn" @click="toggleDark" :class="{ 'is-icon-only': sidebarCollapsed }">
-            <el-icon :size="16"><Moon v-if="!isDark" /><Sunny v-else /></el-icon>
-            <span v-show="!sidebarCollapsed" class="toggle-label">{{ isDark ? '亮色' : '暗色' }}</span>
+          <button
+            class="toggle-btn"
+            :class="{ 'is-icon-only': sidebarCollapsed }"
+            @click="toggleDark"
+          >
+            <el-icon :size="16"> <Moon v-if="!isDark" /><Sunny v-else /> </el-icon>
+            <span v-show="!sidebarCollapsed" class="toggle-label">{{
+              isDark ? '亮色' : '暗色'
+            }}</span>
           </button>
         </el-tooltip>
       </div>
@@ -86,8 +120,10 @@
     <main class="main-area">
       <header class="top-bar">
         <!-- 移动端汉堡菜单 -->
-        <button v-if="isMobile" class="hamburger-btn" @click="toggleSidebar" aria-label="菜单">
-          <el-icon :size="20"><component :is="sidebarOpen ? Close : Menu" /></el-icon>
+        <button v-if="isMobile" class="hamburger-btn" aria-label="菜单" @click="toggleSidebar">
+          <el-icon :size="20">
+            <component :is="sidebarOpen ? Close : Menu" />
+          </el-icon>
         </button>
         <nav class="breadcrumb-nav">
           <span
@@ -97,9 +133,13 @@
             :class="{ active: i === breadcrumbs.length - 1, clickable: crumb.path }"
             @click="crumb.path && navigateTo(crumb.path)"
           >
-            <el-icon v-if="crumb.icon" :size="14" class="crumb-icon"><component :is="crumb.icon" /></el-icon>
+            <el-icon v-if="crumb.icon" :size="14" class="crumb-icon"
+              ><component :is="crumb.icon"
+            /></el-icon>
             <span>{{ crumb.label }}</span>
-            <el-icon v-if="i < breadcrumbs.length - 1" :size="12" class="crumb-sep"><ArrowRight /></el-icon>
+            <el-icon v-if="i < breadcrumbs.length - 1" :size="12" class="crumb-sep"
+              ><ArrowRight
+            /></el-icon>
           </span>
         </nav>
 
@@ -143,8 +183,16 @@
 
 <script setup lang="ts">
 import {
-  Search, Moon, Sunny, TrendCharts, Cpu, ArrowRight,
-  Folder, DArrowLeft, Menu, Close,
+  Search,
+  Moon,
+  Sunny,
+  TrendCharts,
+  Cpu,
+  ArrowRight,
+  Folder,
+  DArrowLeft,
+  Menu,
+  Close,
 } from '@element-plus/icons-vue'
 import type { GitHubRepoDetail } from '~/types'
 import type { Component } from 'vue'
@@ -155,7 +203,9 @@ const currentRoute = computed(() => route.path)
 // ===== 移动端检测 =====
 const isMobile = ref(false)
 onMounted(() => {
-  const check = () => { isMobile.value = window.innerWidth < 768 }
+  const check = () => {
+    isMobile.value = window.innerWidth < 768
+  }
   check()
   window.addEventListener('resize', check)
   onUnmounted(() => window.removeEventListener('resize', check))
@@ -245,10 +295,20 @@ provide('clearBreadcrumbRepo', () => {
 // ===== 动态面包屑 =====
 const breadcrumbs = computed(() => {
   const items: { label: string; path?: string; icon?: Component }[] = [
-    { label: 'RepoLens', path: '/', icon: () => h('svg', { viewBox: '0 0 24 24', fill: 'currentColor', style: 'width:14px;height:14px' }, [
-      h('path', { d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z' }),
-      h('polyline', { points: '9 22 9 12 15 12 15 22', stroke: 'currentColor', fill: 'none', 'stroke-width': '2' }),
-    ]) },
+    {
+      label: 'RepoLens',
+      path: '/',
+      icon: () =>
+        h('svg', { viewBox: '0 0 24 24', fill: 'currentColor', style: 'width:14px;height:14px' }, [
+          h('path', { d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z' }),
+          h('polyline', {
+            points: '9 22 9 12 15 12 15 22',
+            stroke: 'currentColor',
+            fill: 'none',
+            'stroke-width': '2',
+          }),
+        ]),
+    },
   ]
 
   const path = route.path
@@ -294,7 +354,9 @@ onMounted(() => {
     }
   }
   window.addEventListener('keydown', handler)
-  onUnmounted(() => { window.removeEventListener('keydown', handler) })
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handler)
+  })
 })
 </script>
 
@@ -316,12 +378,16 @@ onMounted(() => {
   background: var(--el-bg-color);
   display: flex;
   flex-direction: column;
-  transition: width 0.25s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    width 0.25s ease,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   overflow: hidden;
 }
 
-.sidebar.collapsed { width: 64px; }
+.sidebar.collapsed {
+  width: 64px;
+}
 
 /* 移动端关闭按钮 */
 .sidebar-close-btn {
@@ -369,13 +435,23 @@ onMounted(() => {
 }
 
 @keyframes brandIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.brand:hover .brand-icon { transform: scale(1.08) rotate(-5deg); }
+.brand:hover .brand-icon {
+  transform: scale(1.08) rotate(-5deg);
+}
 
-.brand-svg { display: block; }
+.brand-svg {
+  display: block;
+}
 
 .brand-text {
   overflow: hidden;
@@ -427,10 +503,18 @@ onMounted(() => {
   transition: all 0.2s;
 }
 
-.nav-icon:hover { background: var(--el-fill-color-light); color: var(--el-color-primary); }
-.nav-icon.active { background: var(--el-color-primary-light-9); color: var(--el-color-primary); }
+.nav-icon:hover {
+  background: var(--el-fill-color-light);
+  color: var(--el-color-primary);
+}
+.nav-icon.active {
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
 
-.nav-section { margin-bottom: 6px; }
+.nav-section {
+  margin-bottom: 6px;
+}
 
 .nav-label {
   display: block;
@@ -571,7 +655,9 @@ onMounted(() => {
   transition: all 0.15s;
 }
 
-.crumb-item.clickable { cursor: pointer; }
+.crumb-item.clickable {
+  cursor: pointer;
+}
 
 .crumb-item.clickable:hover {
   color: var(--el-color-primary);
@@ -583,9 +669,14 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.crumb-icon { flex-shrink: 0; }
+.crumb-icon {
+  flex-shrink: 0;
+}
 
-.crumb-sep { margin: 0 2px; color: var(--el-border-color); }
+.crumb-sep {
+  margin: 0 2px;
+  color: var(--el-border-color);
+}
 
 /* ============ 操作按钮 ============ */
 .top-actions {
@@ -654,8 +745,12 @@ onMounted(() => {
 }
 
 @keyframes overlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {
@@ -706,10 +801,19 @@ onMounted(() => {
     gap: 8px;
   }
 
-  .ai-btn span { display: none; }
-  .ai-btn { padding: 6px 10px; min-width: auto; }
-  .page-body { padding: 12px; }
-  .breadcrumb-nav { font-size: 12px; }
+  .ai-btn span {
+    display: none;
+  }
+  .ai-btn {
+    padding: 6px 10px;
+    min-width: auto;
+  }
+  .page-body {
+    padding: 12px;
+  }
+  .breadcrumb-nav {
+    font-size: 12px;
+  }
 
   .app-footer {
     padding: 16px 12px 8px;

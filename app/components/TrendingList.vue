@@ -3,19 +3,17 @@
     <template #header>
       <div class="trending-header">
         <div class="trending-title">
-          <el-icon :size="18" color="#f59e0b"><TrendCharts /></el-icon>
+          <el-icon :size="18" color="#f59e0b">
+            <TrendCharts />
+          </el-icon>
           <span>GitHub 趋势</span>
         </div>
         <div class="trending-filters">
           <!-- 时间范围 -->
-          <el-radio-group
-            v-if="showFilters"
-            v-model="timeRange"
-            size="small"
-          >
-            <el-radio-button value="daily">今日</el-radio-button>
-            <el-radio-button value="weekly">本周</el-radio-button>
-            <el-radio-button value="monthly">本月</el-radio-button>
+          <el-radio-group v-if="showFilters" v-model="timeRange" size="small">
+            <el-radio-button value="daily"> 今日 </el-radio-button>
+            <el-radio-button value="weekly"> 本周 </el-radio-button>
+            <el-radio-button value="monthly"> 本月 </el-radio-button>
           </el-radio-group>
           <!-- 语言过滤 -->
           <el-select
@@ -29,7 +27,7 @@
             <el-option value="" label="全部语言" />
             <el-option v-for="lang in popularLanguages" :key="lang" :value="lang" :label="lang" />
           </el-select>
-          <el-tag v-else size="small" type="warning" class="trending-subtitle">最近 7 天</el-tag>
+          <el-tag v-else size="small" type="warning" class="trending-subtitle"> 最近 7 天 </el-tag>
         </div>
       </div>
     </template>
@@ -37,10 +35,10 @@
     <!-- 加载态 -->
     <div v-if="loading" class="trending-loading">
       <div v-for="i in 5" :key="i" class="skeleton-item">
-        <div class="skeleton-rank"></div>
+        <div class="skeleton-rank" />
         <div class="skeleton-content">
-          <div class="skeleton-line short"></div>
-          <div class="skeleton-line long"></div>
+          <div class="skeleton-line short" />
+          <div class="skeleton-line long" />
         </div>
       </div>
     </div>
@@ -79,17 +77,24 @@
                   size="small"
                   circle
                   class="ai-action-btn"
-                  @click="$emit('select', item); $emit('chat', item)"
+                  @click="
+                    $emit('select', item)
+                    $emit('chat', item)
+                  "
                 >
-                  <el-icon :size="14"><Cpu /></el-icon>
+                  <el-icon :size="14">
+                    <Cpu />
+                  </el-icon>
                 </el-button>
               </el-tooltip>
             </div>
           </div>
-          <p class="trending-desc">{{ item.description || '暂无描述' }}</p>
+          <p class="trending-desc">
+            {{ item.description || '暂无描述' }}
+          </p>
           <div class="trending-meta">
-            <span class="trending-lang" v-if="item.language">
-              <span class="lang-dot" :style="{ background: getLangColor(item.language) }"></span>
+            <span v-if="item.language" class="trending-lang">
+              <span class="lang-dot" :style="{ background: getLangColor(item.language) }" />
               {{ item.language }}
             </span>
             <span class="meta-stat">
@@ -98,7 +103,7 @@
             <span class="meta-stat">
               <el-icon :size="14"><Share /></el-icon> {{ formatNum(item.forks) }}
             </span>
-            <span class="trending-today" v-if="item.starsToday">
+            <span v-if="item.starsToday" class="trending-today">
               <el-icon :size="14"><Top /></el-icon> {{ item.starsToday }} today
             </span>
           </div>
@@ -121,13 +126,16 @@ import { Star, Share, TrendCharts, Cpu, Top, ArrowRight } from '@element-plus/ic
 import dayjs from 'dayjs'
 import type { GitHubRepo, TrendRange, LangColorMap } from '~/types'
 
-const props = withDefaults(defineProps<{
-  showFilters?: boolean
-  compact?: boolean
-}>(), {
-  showFilters: false,
-  compact: false,
-})
+const props = withDefaults(
+  defineProps<{
+    showFilters?: boolean
+    compact?: boolean
+  }>(),
+  {
+    showFilters: false,
+    compact: false,
+  },
+)
 
 const emit = defineEmits<{
   select: [repo: GitHubRepo]
@@ -144,15 +152,36 @@ onMounted(() => {
 })
 
 const popularLanguages = [
-  'TypeScript', 'JavaScript', 'Python', 'Go', 'Rust',
-  'Java', 'Vue', 'Ruby', 'Swift', 'Kotlin', 'C++', 'C',
+  'TypeScript',
+  'JavaScript',
+  'Python',
+  'Go',
+  'Rust',
+  'Java',
+  'Vue',
+  'Ruby',
+  'Swift',
+  'Kotlin',
+  'C++',
+  'C',
 ]
 
 const langColors: LangColorMap = {
-  TypeScript: '#3178c6', JavaScript: '#f7df1e', Python: '#3572a5',
-  Go: '#00add8', Rust: '#dea584', Java: '#b07219', Vue: '#41b883',
-  Ruby: '#701516', 'C++': '#f34b7d', C: '#555555', Swift: '#f05138',
-  Kotlin: '#a97bff', Shell: '#89e051', CSS: '#563d7c', HTML: '#e34c26',
+  TypeScript: '#3178c6',
+  JavaScript: '#f7df1e',
+  Python: '#3572a5',
+  Go: '#00add8',
+  Rust: '#dea584',
+  Java: '#b07219',
+  Vue: '#41b883',
+  Ruby: '#701516',
+  'C++': '#f34b7d',
+  C: '#555555',
+  Swift: '#f05138',
+  Kotlin: '#a97bff',
+  Shell: '#89e051',
+  CSS: '#563d7c',
+  HTML: '#e34c26',
 }
 
 const getLangColor = (lang: string) => langColors[lang] || '#8b8b8b'
@@ -167,13 +196,21 @@ const formatNum = (n: number) => {
 const trendingQuery = computed(() => {
   const ranges: Record<TrendRange, number> = { daily: 1, weekly: 7, monthly: 30 }
   const since = dayjs().subtract(ranges[timeRange.value], 'day').format('YYYY-MM-DD')
-  const query: Record<string, string | number | undefined> = { since, per_page: props.compact ? 5 : 15 }
+  const query: Record<string, string | number | undefined> = {
+    since,
+    per_page: props.compact ? 5 : 15,
+  }
   if (language.value) query.language = language.value
   return query
 })
 
-const { data: trendingData, loading, error, refresh: fetchTrending } = useAsyncData<{ items: GitHubRepo[] }>(() =>
-  $fetch('/api/github/trending', { query: trendingQuery.value })
+const {
+  data: trendingData,
+  loading,
+  error,
+  refresh: fetchTrending,
+} = useAsyncData<{ items: GitHubRepo[] }>(() =>
+  $fetch('/api/github/trending', { query: trendingQuery.value }),
 )
 
 const items = computed(() => trendingData.value?.items || [])
@@ -249,12 +286,21 @@ watch([timeRange, language], () => fetchTrending())
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-.skeleton-line.short { width: 60%; }
-.skeleton-line.long { width: 90%; }
+.skeleton-line.short {
+  width: 60%;
+}
+.skeleton-line.long {
+  width: 90%;
+}
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* 列表 */
@@ -304,9 +350,19 @@ watch([timeRange, language], () => fetchTrending())
   transition: transform 0.2s;
 }
 
-.rank-1 { background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; transform: scale(1.1); }
-.rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
-.rank-3 { background: linear-gradient(135deg, #cd7f32, #a0522d); color: #fff; }
+.rank-1 {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #fff;
+  transform: scale(1.1);
+}
+.rank-2 {
+  background: linear-gradient(135deg, #94a3b8, #64748b);
+  color: #fff;
+}
+.rank-3 {
+  background: linear-gradient(135deg, #cd7f32, #a0522d);
+  color: #fff;
+}
 
 .trending-content {
   flex: 1;

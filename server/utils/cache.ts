@@ -27,10 +27,13 @@ export function setCache<T>(key: string, data: T, ttlMs: number): void {
 
 /** 每 10 分钟清理一次过期条目 */
 if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now()
-    for (const [key, entry] of store) {
-      if (now > entry.expiresAt) store.delete(key)
-    }
-  }, 10 * 60 * 1000)
+  setInterval(
+    () => {
+      const now = Date.now()
+      for (const [key, entry] of store) {
+        if (now > entry.expiresAt) store.delete(key)
+      }
+    },
+    10 * 60 * 1000,
+  )
 }

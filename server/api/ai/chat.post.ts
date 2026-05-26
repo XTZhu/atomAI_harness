@@ -14,7 +14,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig()
-  const systemPrompt = config.aiSystemPrompt || '你是一个专业的代码分析助手。使用 Markdown 格式回答，代码块标注语言。'
+  const systemPrompt =
+    config.aiSystemPrompt || '你是一个专业的代码分析助手。使用 Markdown 格式回答，代码块标注语言。'
 
   // 构建 RAG 上下文
   let systemContent = systemPrompt
@@ -25,17 +26,15 @@ export default defineEventHandler(async (event) => {
     if (repoContext.description) systemContent += `**描述**: ${repoContext.description}\n`
     if (repoContext.readme) {
       // README 截断到 4000 字符避免超出上下文
-      const truncatedReadme = repoContext.readme.length > 4000
-        ? repoContext.readme.slice(0, 4000) + '\n...(README 内容已截断)'
-        : repoContext.readme
+      const truncatedReadme =
+        repoContext.readme.length > 4000
+          ? repoContext.readme.slice(0, 4000) + '\n...(README 内容已截断)'
+          : repoContext.readme
       systemContent += `\n**README.md**:\n\`\`\`markdown\n${truncatedReadme}\n\`\`\``
     }
   }
 
-  const allMessages = [
-    { role: 'system', content: systemContent },
-    ...messages,
-  ]
+  const allMessages = [{ role: 'system', content: systemContent }, ...messages]
 
   // 设置 SSE 响应头
   setHeader(event, 'Content-Type', 'text/event-stream')

@@ -42,14 +42,14 @@ export async function githubRequest<T>(
       if (err.status === 403 && err.response?.headers?.['retry-after']) {
         const waitSec = parseInt(err.response.headers['retry-after']) || 10
         if (attempt < maxRetries) {
-          await new Promise(r => setTimeout(r, Math.min(waitSec * 1000, 15000)))
+          await new Promise((r) => setTimeout(r, Math.min(waitSec * 1000, 15000)))
           continue
         }
       }
 
       // 5xx 服务器错误 — 短暂等待后重试
       if (err.status >= 500 && attempt < maxRetries) {
-        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)))
         continue
       }
 

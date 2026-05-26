@@ -31,7 +31,8 @@ ${repoContext.readme ? `- README 摘要: ${repoContext.readme.slice(0, 2500)}` :
   const messages = [
     {
       role: 'system' as const,
-      content: '你是一个专业的开源项目分析助手。你擅长从多个维度简短精炼地分析 GitHub 仓库。使用中文回答，总字数不超过 300 字。',
+      content:
+        '你是一个专业的开源项目分析助手。你擅长从多个维度简短精炼地分析 GitHub 仓库。使用中文回答，总字数不超过 300 字。',
     },
     { role: 'user' as const, content: userPrompt },
   ]

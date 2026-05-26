@@ -18,16 +18,18 @@
     <div v-if="summary || summaryLoading" class="ai-summary-section">
       <div class="ai-summary-header">
         <div class="ai-summary-title">
-          <el-icon :size="16"><MagicStick /></el-icon>
+          <el-icon :size="16">
+            <MagicStick />
+          </el-icon>
           <span>AI 项目解读</span>
-          <el-tag size="small" type="warning" effect="dark" round>AI</el-tag>
+          <el-tag size="small" type="warning" effect="dark" round> AI </el-tag>
         </div>
       </div>
       <!-- 加载态 -->
       <div v-if="summaryLoading" class="ai-summary-loading">
-        <span class="loading-dot"></span>
-        <span class="loading-dot"></span>
-        <span class="loading-dot"></span>
+        <span class="loading-dot" />
+        <span class="loading-dot" />
+        <span class="loading-dot" />
         <span class="loading-text">AI 正在生成项目总结…</span>
       </div>
       <!-- 总结内容 -->
@@ -55,7 +57,7 @@
       <div v-if="summaryError" class="ai-summary-error">
         <el-icon><WarningFilled /></el-icon>
         <span>{{ summaryError }}</span>
-        <el-button text size="small" type="primary" @click="fetchSummary">重试</el-button>
+        <el-button text size="small" type="primary" @click="fetchSummary"> 重试 </el-button>
       </div>
     </div>
 
@@ -65,25 +67,33 @@
       <el-row :gutter="16">
         <el-col :span="6">
           <div class="stat-box">
-            <div class="stat-value">{{ repo.stars?.toLocaleString() }}</div>
+            <div class="stat-value">
+              {{ repo.stars?.toLocaleString() }}
+            </div>
             <div class="stat-label">Stars</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="stat-box">
-            <div class="stat-value">{{ repo.forks?.toLocaleString() }}</div>
+            <div class="stat-value">
+              {{ repo.forks?.toLocaleString() }}
+            </div>
             <div class="stat-label">Forks</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="stat-box">
-            <div class="stat-value">{{ repo.openIssues?.toLocaleString() }}</div>
+            <div class="stat-value">
+              {{ repo.openIssues?.toLocaleString() }}
+            </div>
             <div class="stat-label">Issues</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="stat-box">
-            <div class="stat-value">{{ repo.watchers?.toLocaleString() }}</div>
+            <div class="stat-value">
+              {{ repo.watchers?.toLocaleString() }}
+            </div>
             <div class="stat-label">Watchers</div>
           </div>
         </el-col>
@@ -95,7 +105,9 @@
     <div class="detail-info">
       <el-descriptions :column="2" size="small" border>
         <el-descriptions-item label="语言">
-          <el-tag v-if="repo.language" size="small">{{ repo.language }}</el-tag>
+          <el-tag v-if="repo.language" size="small">
+            {{ repo.language }}
+          </el-tag>
           <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="许可证">
@@ -124,10 +136,10 @@
     </div>
 
     <div class="detail-links">
-      <el-button @click="openUrl(repo.url)" type="default">
+      <el-button type="default" @click="openUrl(repo.url)">
         <el-icon><Link /></el-icon> 在 GitHub 打开
       </el-button>
-      <el-button v-if="repo.homepage" @click="openUrl(repo.homepage)" type="info">
+      <el-button v-if="repo.homepage" type="info" @click="openUrl(repo.homepage)">
         <el-icon><Link /></el-icon> 项目主页
       </el-button>
     </div>
@@ -139,7 +151,7 @@
           <div class="readme-title">
             <el-icon><Document /></el-icon>
             <span>README.md</span>
-            <el-tag size="small" type="info" effect="plain">预览</el-tag>
+            <el-tag size="small" type="info" effect="plain"> 预览 </el-tag>
           </div>
         </template>
         <div class="readme-preview">
@@ -170,7 +182,7 @@ defineEmits<{
   chat: [repo: any]
 }>()
 
-const MAX_LENGTH = 10000;
+const MAX_LENGTH = 10000
 
 // README 预览截断
 const readmePreview = computed(() => {
@@ -190,16 +202,19 @@ const summaryParts = computed(() => {
   if (!text) return { what: '', how: '', why: '' }
 
   // 清理残存的 ** 标记
-  const clean = (s: string) => s
-    .replace(/^\*\*/, '')
-    .replace(/\*\*$/, '')
-    .replace(/^\*([^*])/, '$1')
-    .replace(/([^*])\*$/, '$1')
-    .trim()
+  const clean = (s: string) =>
+    s
+      .replace(/^\*\*/, '')
+      .replace(/\*\*$/, '')
+      .replace(/^\*([^*])/, '$1')
+      .replace(/([^*])\*$/, '$1')
+      .trim()
 
   // 匹配 **What** 或 What 格式，支持前后可选的 bold 标记
-  const whatRe = /(?:\*\*)?\s*(?:What|是什么)\s*(?:\*\*)?[：:]\s*(.+?)(?=\s*(?:\*\*)?\s*(?:How|怎么|如何|采用)\s*(?:\*\*)?[：:]|$)/s
-  const howRe = /(?:\*\*)?\s*(?:How|怎么|如何|采用)\s*(?:\*\*)?[：:]\s*(.+?)(?=\s*(?:\*\*)?\s*(?:Why|为什么|原因|意义)\s*(?:\*\*)?[：:]|$)/s
+  const whatRe =
+    /(?:\*\*)?\s*(?:What|是什么)\s*(?:\*\*)?[：:]\s*(.+?)(?=\s*(?:\*\*)?\s*(?:How|怎么|如何|采用)\s*(?:\*\*)?[：:]|$)/s
+  const howRe =
+    /(?:\*\*)?\s*(?:How|怎么|如何|采用)\s*(?:\*\*)?[：:]\s*(.+?)(?=\s*(?:\*\*)?\s*(?:Why|为什么|原因|意义)\s*(?:\*\*)?[：:]|$)/s
   const whyRe = /(?:\*\*)?\s*(?:Why|为什么|原因|意义)\s*(?:\*\*)?[：:]\s*(.+)/s
 
   const whatMatch = text.match(whatRe)
@@ -254,14 +269,18 @@ const fetchSummary = async () => {
 }
 
 // repo 变化时自动获取总结
-watch(() => props.repo?.name, (name) => {
-  if (name) {
-    fetchSummary()
-  } else {
-    summary.value = ''
-    summaryError.value = ''
-  }
-}, { immediate: true })
+watch(
+  () => props.repo?.name,
+  (name) => {
+    if (name) {
+      fetchSummary()
+    } else {
+      summary.value = ''
+      summaryError.value = ''
+    }
+  },
+  { immediate: true },
+)
 
 const formatSize = (kb: number) => {
   if (!kb) return '-'
@@ -285,8 +304,14 @@ const openUrl = (url: string) => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .detail-header {
@@ -371,7 +396,11 @@ const openUrl = (url: string) => {
 /* ===== AI 总结概览 ===== */
 .ai-summary-section {
   margin-top: 16px;
-  background: linear-gradient(135deg, var(--el-color-primary-light-9) 0%, var(--el-color-warning-light-9) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--el-color-primary-light-9) 0%,
+    var(--el-color-warning-light-9) 100%
+  );
   border: 1px solid var(--el-color-primary-light-7);
   border-radius: 12px;
   padding: 16px 18px;
@@ -406,13 +435,27 @@ const openUrl = (url: string) => {
   border-radius: 50%;
   animation: summaryDot 1.4s infinite ease-in-out;
 }
-.loading-dot:nth-child(1) { animation-delay: 0s; }
-.loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.loading-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes summaryDot {
-  0%, 60%, 100% { transform: scale(0.6); opacity: 0.4; }
-  30% { transform: scale(1); opacity: 1; }
+  0%,
+  60%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  30% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .loading-text {
@@ -520,7 +563,8 @@ const openUrl = (url: string) => {
 .ai-analyze-btn::before {
   content: '';
   position: absolute;
-  top: 0; left: -100%;
+  top: 0;
+  left: -100%;
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, #7c3aed, #ec4899);
