@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div class="chat-overlay" :class="{ open: isOpen }" @click.self="closePanel">
       <div class="chat-panel" :class="{ open: isOpen }">
-        <!-- 面板头部 -->
+        <!-- ===== 面板头部 ===== -->
         <div class="chat-header">
           <div class="chat-title">
             <el-icon :size="20"><Cpu /></el-icon>
@@ -10,53 +10,53 @@
             <el-tag size="small" type="warning" effect="dark" round class="model-tag">{{ aiModelName }}</el-tag>
           </div>
           <div class="chat-actions">
-            <!-- 会话选择 -->
-            <el-dropdown v-if="sessions.length > 0" trigger="click" @command="switchSession">
-              <el-button text size="small" class="session-btn">
-                <el-icon :size="16"><ChatLineSquare /></el-icon>
-              </el-button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item
-                    v-for="s in sessions"
-                    :key="s.key"
-                    :command="s.key"
-                    :class="{ 'is-active': s.key === activeSessionKey }"
-                  >
-                    <div class="session-item">
-                      <span class="session-repo">{{ s.key }}</span>
-                      <span class="session-count">{{ s.count }} 条</span>
-                    </div>
-                  </el-dropdown-item>
-                  <el-dropdown-item v-if="sessions.length > 0" divided command="__clear_all__">
-                    <el-icon><Delete /></el-icon> 清除所有会话
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-            <el-tooltip content="清除当前对话" placement="bottom">
-              <el-button text circle @click="clearCurrentSession">
-                <el-icon><Delete /></el-icon>
+            <el-tooltip content="新建对话" placement="bottom">
+              <el-button text circle @click="newConversation">
+                <el-icon :size="16"><Plus /></el-icon>
               </el-button>
             </el-tooltip>
             <el-tooltip content="关闭面板" placement="bottom">
               <el-button text circle @click="closePanel">
-                <el-icon><Close /></el-icon>
+                <el-icon :size="16"><Close /></el-icon>
               </el-button>
             </el-tooltip>
           </div>
         </div>
 
-        <!-- Repo 上下文指示条 -->
-        <div v-if="repoContext" class="chat-context-bar">
-          <el-icon :size="14"><Folder /></el-icon>
-          <span class="context-repo-name">{{ repoContext }}</span>
-          <el-button text size="small" class="context-switch-btn" @click="removeContext">
-            <el-icon :size="12"><Close /></el-icon>
-          </el-button>
+        <!-- ===== 仓库上下文条 ===== -->
+        <div class="chat-context-bar" :class="{ active: !!repoContext }">
+          <template v-if="repoContext">
+            <el-icon :size="15" class="context-icon"><Folder /></el-icon>
+            <span class="context-repo">{{ repoContext }}</span>
+            <span v-if="messages.length > 0" class="context-msg-count">{{ messages.length }} 条对话</span>
+            <el-button text size="small" class="context-close" @click="removeContext">
+              <el-icon :size="14"><Close /></el-icon>
+            </el-button>
+          </template>
+          <template v-else>
+            <el-icon :size="15" class="context-icon idle"><InfoFilled /></el-icon>
+            <span class="context-hint">选择一个仓库后点击「AI 分析」开始对话</span>
+          </template>
         </div>
 
-        <!-- 消息列表 -->
+        <!-- ===== 仓库历史快速切换 ===== -->
+        <div v-if="recentRepos.length > 0" class="repo-quick-switch">
+          <span class="quick-label">最近分析：</span>
+          <div class="quick-chips">
+            <span
+              v-for="r in recentRepos"
+              :key="r.key"
+              class="quick-chip"
+              :class="{ active: r.key === activeSessionKey }"
+              @click="switchRepo(r.key)"
+            >
+              {{ r.key }}
+              <span class="chip-count" v-if="r.count > 0">{{ r.count }}</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- ===== 消息列表 ===== -->
         <div ref="messageListRef" class="chat-messages">
           <!-- 欢迎态 -->
           <div v-if="messages.length === 0 && !streaming" class="chat-welcome">
@@ -116,7 +116,7 @@
             </div>
           </div>
 
-          <!-- 加载中（等待首 token） -->
+          <!-- 加载中 -->
           <div v-if="loading && !streaming" class="chat-loading">
             <div class="typing-indicator">
               <span></span><span></span><span></span>
@@ -124,9 +124,8 @@
           </div>
         </div>
 
-        <!-- 输入区 -->
+        <!-- ===== 输入区 ===== -->
         <div class="chat-input">
-          <!-- 停止生成按钮 -->
           <div v-if="streaming" class="stop-bar">
             <el-button type="warning" plain size="small" @click="stopStreaming">
               <el-icon><VideoPause /></el-icon> 停止生成
@@ -138,16 +137,16 @@
             v-model="inputText"
             type="textarea"
             :rows="2"
-            placeholder="输入你的问题..."
+            :placeholder="repoContext ? '输入你的问题...' : '请先选择一个仓库'"
             resize="none"
-            :disabled="streaming"
+            :disabled="streaming || !repoContext"
             @keydown.enter.exact.prevent="handleSend"
           >
             <template #suffix>
               <el-button
                 v-if="!streaming"
                 type="primary"
-                :disabled="!inputText.trim()"
+                :disabled="!inputText.trim() || !repoContext"
                 :loading="loading"
                 circle
                 size="small"
@@ -165,8 +164,8 @@
 </template>
 
 <script setup lang="ts">
-import { Cpu, Delete, Close, User, Promotion, VideoPause, ChatLineSquare, Folder } from '@element-plus/icons-vue'
-import type { AIChatMessage, SSEEvent, GitHubRepoDetail } from '~/types'
+import { Cpu, Close, User, Promotion, VideoPause, Folder, Plus, InfoFilled } from '@element-plus/icons-vue'
+import type { GitHubRepoDetail } from '~/types'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -195,79 +194,65 @@ const abortController = ref<AbortController | null>(null)
 const config = useRuntimeConfig()
 const aiModelName = computed(() => config.public.aiModel || 'AI')
 
-// ===== 多仓库会话管理 =====
-type SessionStore = Map<string, ChatMessage[]>
-const sessionStore = ref<SessionStore>(new Map())
+// ===== 多仓库对话存储 =====
+const conversations = ref<Map<string, ChatMessage[]>>(new Map())
 const activeSessionKey = ref<string | null>(null)
-
-// 当前激活会话的消息
 const messages = ref<ChatMessage[]>([])
 
-// 同步会话到 store
-const syncToStore = () => {
-  const key = activeSessionKey.value || (props.repoContext || '__default__')
-  sessionStore.value.set(key, [...messages.value])
+// 保存当前对话到 store
+const saveCurrent = () => {
+  const key = activeSessionKey.value
+  if (key && messages.value.length > 0) {
+    conversations.value.set(key, [...messages.value])
+  }
 }
 
-// 从 store 加载会话
-const loadFromStore = (key: string) => {
-  messages.value = [...(sessionStore.value.get(key) || [])]
+// 加载指定仓库对话
+const loadRepo = (key: string) => {
+  saveCurrent()
+  activeSessionKey.value = key
+  messages.value = [...(conversations.value.get(key) || [])]
+  streamContent.value = ''
 }
 
-// 所有会话列表（供下拉菜单）
-const sessions = computed(() => {
+// 监听外部 repoContext 变化 → 自动切换
+watch(() => props.repoContext, (newRepo) => {
+  if (newRepo) loadRepo(newRepo)
+})
+
+// 面板打开时有 repoContext 就加载
+watch(() => props.isOpen, (open) => {
+  if (open && props.repoContext) loadRepo(props.repoContext)
+})
+
+// 最近分析的仓库列表
+const recentRepos = computed(() => {
   const list: { key: string; count: number }[] = []
-  for (const [key, msgs] of sessionStore.value.entries()) {
-    if (key !== '__default__' || msgs.length > 0) {
+  for (const [key, msgs] of conversations.value.entries()) {
+    if (msgs.length > 0) {
       list.push({ key, count: msgs.length })
     }
   }
-  return list
+  // 最近的排前面，最多 5 个
+  return list.slice(0, 5)
 })
 
-// 切换到指定仓库会话
-const loadSession = (key: string) => {
-  // 先保存当前会话
-  syncToStore()
-  // 切换并加载
-  activeSessionKey.value = key
-  loadFromStore(key)
+const switchRepo = (key: string) => {
+  // 通知父组件切换上下文
+  loadRepo(key)
 }
 
-// 当外部 repoContext 变化时，自动切换会话
-watch(() => props.repoContext, (newRepo) => {
-  if (newRepo) {
-    loadSession(newRepo)
-  }
-})
-
-// 当面板打开且有 repoContext 时，确保加载会话
-watch(() => props.isOpen, (open) => {
-  if (open && props.repoContext) {
-    loadSession(props.repoContext)
-  }
-})
-
-const switchSession = (key: string) => {
-  if (key === '__clear_all__') {
-    sessionStore.value.clear()
+const newConversation = () => {
+  if (props.repoContext) {
+    // 为当前仓库新建对话（覆盖旧的）
+    conversations.value.set(props.repoContext, [])
     messages.value = []
-    activeSessionKey.value = null
-    if (props.repoContext) {
-      loadSession(props.repoContext)
-    }
-    return
+    streamContent.value = ''
+    activeSessionKey.value = props.repoContext
   }
-  loadSession(key)
 }
 
-const clearCurrentSession = () => {
-  messages.value = []
-  streamContent.value = ''
-  syncToStore()
-}
-
-// 根据是否有 repo 上下文切换快捷问题
+// ===== 快捷提问 =====
 const quickPrompts = computed(() => {
   if (props.repoContext) {
     return [
@@ -286,25 +271,18 @@ const quickPrompts = computed(() => {
 
 const currentPrompts = computed(() => quickPrompts.value)
 
-// ===== 核心操作 =====
-const closePanel = () => {
-  emit('close')
-}
+const closePanel = () => emit('close')
+const removeContext = () => emit('clear-context')
 
-const removeContext = () => {
-  emit('clear-context')
-}
-
-// ===== 停止流式输出 =====
+// ===== 停止流式 =====
 const stopStreaming = () => {
   if (abortController.value) {
     abortController.value.abort()
     abortController.value = null
   }
-  // 把已输出的内容作为一条消息保存
   if (streamContent.value) {
     messages.value.push({ role: 'assistant', content: streamContent.value + '\n\n*[已停止生成]*' })
-    syncToStore()
+    saveCurrent()
   }
   streamContent.value = ''
   streaming.value = false
@@ -313,29 +291,26 @@ const stopStreaming = () => {
 
 // ===== 发送消息 =====
 const handleSend = () => {
-  if (!inputText.value.trim() || streaming.value) return
+  if (!inputText.value.trim() || streaming.value || !props.repoContext) return
   sendMessage(inputText.value)
   inputText.value = ''
 }
 
 const sendMessage = async (text: string) => {
   messages.value.push({ role: 'user', content: text })
-  syncToStore()
+  saveCurrent()
   scrollToBottom()
 
-  const repoContext = props.repoData
-    ? {
-        name: props.repoData.name,
-        description: props.repoData.description,
-        language: props.repoData.language,
-        readme: props.repoData.readme || null,
-      }
-    : null
+  const repoCtx = props.repoData ? {
+    name: props.repoData.name,
+    description: props.repoData.description,
+    language: props.repoData.language,
+    readme: props.repoData.readme || null,
+  } : null
 
   loading.value = true
   streamContent.value = ''
 
-  // 创建 AbortController
   const controller = new AbortController()
   abortController.value = controller
 
@@ -345,14 +320,12 @@ const sendMessage = async (text: string) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: messages.value.map(m => ({ role: m.role, content: m.content })),
-        repoContext,
+        repoContext: repoCtx,
       }),
       signal: controller.signal,
     })
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
     streaming.value = true
     loading.value = false
@@ -372,7 +345,6 @@ const sendMessage = async (text: string) => {
       for (const line of lines) {
         const trimmed = line.trim()
         if (!trimmed || !trimmed.startsWith('data: ')) continue
-
         try {
           const data = JSON.parse(trimmed.slice(6))
           if (data.type === 'token') {
@@ -380,7 +352,7 @@ const sendMessage = async (text: string) => {
             scrollToBottom()
           } else if (data.type === 'done') {
             messages.value.push({ role: 'assistant', content: data.fullText })
-            syncToStore()
+            saveCurrent()
             streamContent.value = ''
             streaming.value = false
             abortController.value = null
@@ -396,10 +368,7 @@ const sendMessage = async (text: string) => {
       }
     }
   } catch (err: any) {
-    if (err.name === 'AbortError') {
-      // 用户主动停止，已在 stopStreaming 中处理
-      return
-    }
+    if (err.name === 'AbortError') return
     ElMessage.error(err.message || '请求失败')
     streaming.value = false
     loading.value = false
@@ -419,26 +388,21 @@ const scrollToBottom = () => {
 <style scoped>
 /* ===== 遮罩 ===== */
 .chat-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  position: fixed; inset: 0;
   background: rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.3s ease;
 }
 .chat-overlay.open { opacity: 1; pointer-events: all; }
 
 /* ===== 面板 ===== */
 .chat-panel {
-  position: fixed;
-  top: 0; right: 0; bottom: 0;
-  width: 480px;
-  max-width: 100vw;
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 480px; max-width: 100vw;
   background: var(--el-bg-color);
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   transform: translateX(100%);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -446,98 +410,68 @@ const scrollToBottom = () => {
 
 /* ===== Header ===== */
 .chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; justify-content: space-between; align-items: center;
   padding: 14px 18px;
   border-bottom: 1px solid var(--el-border-color-lighter);
   flex-shrink: 0;
 }
-.chat-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 15px;
-  flex: 1;
-  min-width: 0;
-}
-.chat-actions { display: flex; gap: 2px; }
+.chat-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; }
+.chat-actions { display: flex; gap: 2px; align-items: center; }
 
-/* 会话按钮 */
-.session-btn {
-  color: var(--el-text-color-secondary);
-  transition: color 0.15s;
-}
-.session-btn:hover { color: var(--el-color-primary); }
+.model-tag { font-size: 10px; letter-spacing: 0.5px; flex-shrink: 0; }
 
-/* 会话下拉项 */
-.session-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-width: 140px;
-}
-.session-repo {
-  font-weight: 500;
-  font-size: 13px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 180px;
-}
-.session-count {
-  font-size: 11px;
-  color: var(--el-text-color-placeholder);
-  flex-shrink: 0;
-}
-
-/* Repo 上下文指示条 */
+/* ===== 上下文条 ===== */
 .chat-context-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  background: var(--el-color-primary-light-9);
-  border-bottom: 1px solid var(--el-color-primary-light-7);
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
   font-size: 13px;
-  color: var(--el-color-primary);
   flex-shrink: 0;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  transition: background 0.2s;
 }
-.context-repo-name {
-  flex: 1;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.chat-context-bar.active {
+  background: var(--el-color-primary-light-9);
+  border-bottom-color: var(--el-color-primary-light-7);
 }
-.context-switch-btn {
-  flex-shrink: 0;
-  color: var(--el-text-color-secondary);
-}
-.context-switch-btn:hover { color: var(--el-color-danger); }
+.context-icon { color: var(--el-text-color-secondary); flex-shrink: 0; }
+.chat-context-bar.active .context-icon { color: var(--el-color-primary); }
+.context-icon.idle { color: var(--el-text-color-placeholder); }
+.context-repo { font-weight: 600; color: var(--el-color-primary); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.context-msg-count { font-size: 11px; color: var(--el-text-color-placeholder); flex-shrink: 0; }
+.context-hint { color: var(--el-text-color-placeholder); flex: 1; }
+.context-close { flex-shrink: 0; color: var(--el-text-color-secondary); }
+.context-close:hover { color: var(--el-color-danger); }
 
-/* 模型标签 */
-.model-tag {
-  font-size: 10px;
-  letter-spacing: 0.5px;
+/* ===== 仓库快速切换 ===== */
+.repo-quick-switch {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
   flex-shrink: 0;
+  overflow: hidden;
 }
+.quick-label { font-size: 11px; color: var(--el-text-color-placeholder); flex-shrink: 0; white-space: nowrap; }
+.quick-chips { display: flex; gap: 6px; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.quick-chips::-webkit-scrollbar { display: none; }
+.quick-chip {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; white-space: nowrap; cursor: pointer;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-secondary);
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+.quick-chip:hover { background: var(--el-fill-color-light); color: var(--el-text-color-primary); }
+.quick-chip.active { background: var(--el-color-primary-light-9); color: var(--el-color-primary); border-color: var(--el-color-primary-light-5); font-weight: 600; }
+.chip-count { font-size: 10px; background: var(--el-color-primary-light-5); color: #fff; padding: 0 5px; border-radius: 8px; min-width: 16px; text-align: center; }
 
 /* ===== 消息区 ===== */
-.chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 18px;
-  scroll-behavior: smooth;
-}
+.chat-messages { flex: 1; overflow-y: auto; padding: 16px 18px; scroll-behavior: smooth; }
 
-/* 欢迎态 */
 .chat-welcome { text-align: center; padding: 40px 16px; }
 .welcome-icon {
-  width: 72px; height: 72px;
-  margin: 0 auto 16px;
+  width: 72px; height: 72px; margin: 0 auto 16px;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(135deg, var(--el-color-primary-light-8), var(--el-color-primary-light-3));
   border-radius: 18px; color: var(--el-color-primary);
@@ -546,95 +480,42 @@ const scrollToBottom = () => {
 .chat-welcome p { font-size: 13px; color: var(--el-text-color-secondary); margin: 0 0 16px; }
 .chat-welcome strong { color: var(--el-color-primary); }
 
-.quick-prompts {
-  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
-}
-.prompt-tag {
-  cursor: pointer; transition: all 0.2s;
-}
-.prompt-tag:hover {
-  background: var(--el-color-primary); color: #fff; border-color: var(--el-color-primary);
-}
+.quick-prompts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.prompt-tag { cursor: pointer; transition: all 0.2s; }
+.prompt-tag:hover { background: var(--el-color-primary); color: #fff; border-color: var(--el-color-primary); }
 
-/* 消息气泡 */
 .chat-message { display: flex; gap: 10px; margin-bottom: 18px; }
 .chat-message.user { flex-direction: row-reverse; }
 .message-avatar {
-  width: 34px; height: 34px;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  width: 34px; height: 34px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .chat-message.user .message-avatar { background: var(--el-color-primary-light-9); color: var(--el-color-primary); }
 .chat-message.assistant .message-avatar { background: var(--el-color-success-light-9); color: var(--el-color-success); }
 
 .message-body { max-width: 82%; min-width: 0; }
-.message-content {
-  padding: 10px 14px; border-radius: 14px;
-  font-size: 14px; line-height: 1.65; word-break: break-word;
-}
-.user-content {
-  background: var(--el-color-primary); color: #fff;
-  border-bottom-right-radius: 4px;
-}
-.chat-message.assistant .message-content {
-  background: var(--el-fill-color);
-  border-bottom-left-radius: 4px;
-}
+.message-content { padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.65; word-break: break-word; }
+.user-content { background: var(--el-color-primary); color: #fff; border-bottom-right-radius: 4px; }
+.chat-message.assistant .message-content { background: var(--el-fill-color); border-bottom-left-radius: 4px; }
 
-/* 流式输出 */
 .streaming-content { border: 1px dashed var(--el-color-primary-light-5); }
 
-.cursor-blink {
-  display: inline; animation: blink 1s step-end infinite;
-  color: var(--el-color-primary); font-weight: bold;
-}
+.cursor-blink { display: inline; animation: blink 1s step-end infinite; color: var(--el-color-primary); font-weight: bold; }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* 加载态 */
 .chat-loading { display: flex; justify-content: flex-start; padding: 8px 0; }
-.typing-indicator {
-  display: flex; gap: 4px; padding: 10px 16px;
-  background: var(--el-fill-color); border-radius: 12px;
-}
-.typing-indicator span {
-  width: 8px; height: 8px;
-  background: var(--el-text-color-secondary); border-radius: 50%;
-  animation: typing 1.4s infinite ease-in-out;
-}
+.typing-indicator { display: flex; gap: 4px; padding: 10px 16px; background: var(--el-fill-color); border-radius: 12px; }
+.typing-indicator span { width: 8px; height: 8px; background: var(--el-text-color-secondary); border-radius: 50%; animation: typing 1.4s infinite ease-in-out; }
 .typing-indicator span:nth-child(1) { animation-delay: 0s; }
 .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
 .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes typing {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-  30% { transform: translateY(-6px); opacity: 1; }
-}
+@keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
 
 /* ===== 输入区 ===== */
-.chat-input {
-  padding: 10px 18px 14px;
-  border-top: 1px solid var(--el-border-color-lighter);
-  flex-shrink: 0;
-}
-
-/* 停止生成条 */
-.stop-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  padding: 8px 12px;
-  background: var(--el-color-warning-light-9);
-  border-radius: 8px;
-}
-.stop-hint {
-  font-size: 12px; color: var(--el-text-color-secondary);
-}
-
-.input-hint {
-  font-size: 11px; color: var(--el-text-color-placeholder);
-  margin: 6px 0 0; text-align: right;
-}
+.chat-input { padding: 10px 18px 14px; border-top: 1px solid var(--el-border-color-lighter); flex-shrink: 0; }
+.stop-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px 12px; background: var(--el-color-warning-light-9); border-radius: 8px; }
+.stop-hint { font-size: 12px; color: var(--el-text-color-secondary); }
+.input-hint { font-size: 11px; color: var(--el-text-color-placeholder); margin: 6px 0 0; text-align: right; }
 
 /* ===== 响应式 ===== */
 @media (max-width: 520px) {
@@ -645,5 +526,8 @@ const scrollToBottom = () => {
   .chat-welcome { padding: 24px 16px; }
   .quick-prompts { gap: 4px; }
   .prompt-tag { font-size: 11px; padding: 0 10px; }
+  .chat-context-bar { padding: 8px 14px; }
+  .repo-quick-switch { padding: 6px 14px; }
+  .quick-chip { font-size: 11px; padding: 2px 8px; }
 }
 </style>
