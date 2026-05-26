@@ -85,9 +85,10 @@
               :key="r.key"
               class="quick-chip"
               :class="{ active: r.key === activeSessionKey }"
+              :title="r.key"
               @click="switchRepo(r.key)"
             >
-              {{ r.key }}
+              <span>{{ r.key }}</span>
               <span class="chip-count" v-if="r.count > 0">{{ r.count }}</span>
             </span>
           </div>
@@ -645,15 +646,15 @@ const scrollToBottom = () => {
 
 /* ===== 仓库快速切换 ===== */
 .repo-quick-switch {
-  display: flex; align-items: center; gap: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   padding: 8px 18px;
   border-bottom: 1px solid var(--el-border-color-lighter);
   flex-shrink: 0;
-  overflow: hidden;
 }
-.quick-label { font-size: 11px; color: var(--el-text-color-placeholder); flex-shrink: 0; white-space: nowrap; }
-.quick-chips { display: flex; gap: 6px; overflow-x: auto; flex: 1; scrollbar-width: none; }
-.quick-chips::-webkit-scrollbar { display: none; }
+.quick-label { font-size: 11px; color: var(--el-text-color-placeholder); flex-shrink: 0; white-space: nowrap; padding-top: 4px; }
+.quick-chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
 .quick-chip {
   display: flex; align-items: center; gap: 4px;
   padding: 3px 10px; border-radius: 12px;
@@ -662,6 +663,11 @@ const scrollToBottom = () => {
   color: var(--el-text-color-secondary);
   transition: all 0.15s;
   border: 1px solid transparent;
+  max-width: 160px;
+}
+.quick-chip span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .quick-chip:hover { background: var(--el-fill-color-light); color: var(--el-text-color-primary); }
 .quick-chip.active { background: var(--el-color-primary-light-9); color: var(--el-color-primary); border-color: var(--el-color-primary-light-5); font-weight: 600; }
@@ -729,6 +735,6 @@ const scrollToBottom = () => {
   .prompt-tag { font-size: 11px; padding: 0 10px; }
   .chat-context-bar { padding: 8px 14px; }
   .repo-quick-switch { padding: 6px 14px; }
-  .quick-chip { font-size: 11px; padding: 2px 8px; }
+  .quick-chip { font-size: 11px; padding: 2px 8px; max-width: 130px; }
 }
 </style>
