@@ -214,6 +214,8 @@
         </el-card>
       </div>
 
+      <!-- 技术栈展示 -->
+      <TechStack />
     </section>
   </div>
 </template>
