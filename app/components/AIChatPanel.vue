@@ -240,6 +240,25 @@ const panelState = computed<PanelState>(() => {
 
 // ===== 多仓库对话存储 =====
 const conversations = ref<Map<string, ChatMessage[]>>(new Map())
+
+// 从 localStorage 恢复会话列表（仅 repo 名，不含消息内容）
+const restoreSessions = () => {
+  try {
+    const raw = localStorage.getItem('repolens:ai-sessions')
+    if (!raw) return
+    const keys: string[] = JSON.parse(raw)
+    keys.forEach(k => { if (!conversations.value.has(k)) conversations.value.set(k, []) })
+  } catch { /* ignore */ }
+}
+
+const persistSessions = () => {
+  try {
+    const keys = Array.from(conversations.value.keys()).filter(k => k !== '__default__')
+    localStorage.setItem('repolens:ai-sessions', JSON.stringify(keys))
+  } catch { /* ignore */ }
+}
+
+restoreSessions()
 const activeSessionKey = ref<string | null>(null)
 const messages = ref<ChatMessage[]>([])
 
@@ -247,6 +266,7 @@ const saveCurrent = () => {
   const key = activeSessionKey.value
   if (key && messages.value.length > 0) {
     conversations.value.set(key, [...messages.value])
+    persistSessions()
   }
 }
 
