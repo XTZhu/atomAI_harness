@@ -45,13 +45,13 @@
 </template>
 
 <script setup lang="ts">
-import { Setting, Cpu, Monitor, Box, Code, Files, Connection, Document, Link } from '@element-plus/icons-vue'
+import { Setting, Cpu, Monitor, Box, Memo, Files, Connection, Document, Link } from '@element-plus/icons-vue'
 
 const techStack = [
   { name: 'Nuxt 4', desc: 'SSR 框架', icon: Monitor, gradient: 'linear-gradient(135deg, #00DC82, #00B86E)' },
   { name: 'Vue 3.5', desc: '响应式核心', icon: Box, gradient: 'linear-gradient(135deg, #4FC08D, #3AA876)' },
   { name: 'Element Plus', desc: 'UI 组件库', icon: Files, gradient: 'linear-gradient(135deg, #409EFF, #337ECC)' },
-  { name: 'TypeScript', desc: '类型安全', icon: Code, gradient: 'linear-gradient(135deg, #3178C6, #235A97)' },
+  { name: 'TypeScript', desc: '类型安全', icon: Memo, gradient: 'linear-gradient(135deg, #3178C6, #235A97)' },
   { name: 'Vite 7', desc: '极速构建', icon: Connection, gradient: 'linear-gradient(135deg, #646CFF, #747BFF)' },
   { name: 'Octokit 5', desc: 'GitHub API', icon: Link, gradient: 'linear-gradient(135deg, #333, #555)' },
 ]
