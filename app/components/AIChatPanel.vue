@@ -13,6 +13,7 @@
               size="small"
               type="info"
               effect="plain"
+              class="repo-context-tag"
               closable
               @close="removeContext"
             >
@@ -367,6 +368,19 @@ const scrollToBottom = () => {
   min-width: 0;
 }
 .chat-actions { display: flex; gap: 2px; }
+
+/* 仓库上下文标签截断 */
+.repo-context-tag {
+  max-width: 180px;
+  flex-shrink: 0;
+}
+
+.repo-context-tag :deep(.el-tag__content) {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* ===== 消息区 ===== */
 .chat-messages {
