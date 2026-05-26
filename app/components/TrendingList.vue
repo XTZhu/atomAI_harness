@@ -12,7 +12,6 @@
             v-if="showFilters"
             v-model="timeRange"
             size="small"
-            @change="fetchTrending"
           >
             <el-radio-button value="daily">今日</el-radio-button>
             <el-radio-button value="weekly">本周</el-radio-button>
@@ -26,7 +25,6 @@
             placeholder="全部语言"
             clearable
             class="lang-filter"
-            @change="fetchTrending"
           >
             <el-option value="" label="全部语言" />
             <el-option v-for="lang in popularLanguages" :key="lang" :value="lang" :label="lang" />
@@ -164,20 +162,23 @@ const formatNum = (n: number) => {
   return n.toLocaleString()
 }
 
-// 构建查询参数
-const buildQuery = () => {
+// 构建查询参数（响应式）
+const trendingQuery = computed(() => {
   const now = new Date()
   const ranges: Record<TrendRange, number> = { daily: 1, weekly: 7, monthly: 30 }
   const since = new Date(now.getTime() - ranges[timeRange.value] * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  return {
+  const query: Record<string, string | number | undefined> = {
     since,
-    language: language.value || undefined,
     per_page: props.compact ? 5 : 15,
   }
-}
+  if (language.value) {
+    query.language = language.value
+  }
+  return query
+})
 
 const { data: trendingData, loading, error, refresh: fetchTrending } = useAsyncData<{ items: GitHubRepo[] }>(() =>
-  $fetch('/api/github/trending', { query: buildQuery() })
+  $fetch('/api/github/trending', { query: trendingQuery.value })
 )
 
 const items = computed(() => trendingData.value?.items || [])
