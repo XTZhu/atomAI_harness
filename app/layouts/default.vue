@@ -115,6 +115,14 @@
 
       <div class="page-body">
         <slot />
+        <!-- 底部技术信息 -->
+        <footer class="app-footer">
+          <span class="footer-text">RepoLens · AI-Powered GitHub Explorer</span>
+          <span class="footer-sep">·</span>
+          <span class="footer-text">Nuxt 4 + Vue 3 + Element Plus</span>
+          <span class="footer-sep">·</span>
+          <span class="footer-text">通义千问 · 智谱 GLM · DeepSeek · Ollama</span>
+        </footer>
       </div>
     </main>
 
@@ -557,6 +565,30 @@ onMounted(() => {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-body > :first-child {
+  flex: 1;
+}
+
+/* ============ 底部信息 ============ */
+.app-footer {
+  text-align: center;
+  padding: 24px 16px 12px;
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  flex-shrink: 0;
+}
+
+.footer-text {
+  white-space: nowrap;
+}
+
+.footer-sep {
+  margin: 0 6px;
+  color: var(--el-border-color);
 }
 
 /* ============ 响应式 ============ */
