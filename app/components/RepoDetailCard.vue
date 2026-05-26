@@ -159,9 +159,11 @@
 
 <script setup lang="ts">
 import { ChatDotRound, Link, Document, MagicStick, WarningFilled } from '@element-plus/icons-vue'
+import dayjs from 'dayjs'
+import type { GitHubRepoDetail } from '~/types'
 
 const props = defineProps<{
-  repo: any
+  repo: GitHubRepoDetail
 }>()
 
 defineEmits<{
@@ -269,7 +271,7 @@ const formatSize = (kb: number) => {
 
 const formatTime = (t: string) => {
   if (!t) return '-'
-  return new Date(t).toLocaleDateString('zh-CN')
+  return dayjs(t).format('YYYY-MM-DD')
 }
 
 const openUrl = (url: string) => {

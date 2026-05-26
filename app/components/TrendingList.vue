@@ -118,6 +118,7 @@
 
 <script setup lang="ts">
 import { Star, Share, TrendCharts, Cpu, Top, ArrowRight } from '@element-plus/icons-vue'
+import dayjs from 'dayjs'
 import type { GitHubRepo, TrendRange, LangColorMap } from '~/types'
 
 const props = withDefaults(defineProps<{
@@ -164,16 +165,10 @@ const formatNum = (n: number) => {
 
 // 构建查询参数（响应式）
 const trendingQuery = computed(() => {
-  const now = new Date()
   const ranges: Record<TrendRange, number> = { daily: 1, weekly: 7, monthly: 30 }
-  const since = new Date(now.getTime() - ranges[timeRange.value] * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const query: Record<string, string | number | undefined> = {
-    since,
-    per_page: props.compact ? 5 : 15,
-  }
-  if (language.value) {
-    query.language = language.value
-  }
+  const since = dayjs().subtract(ranges[timeRange.value], 'day').format('YYYY-MM-DD')
+  const query: Record<string, string | number | undefined> = { since, per_page: props.compact ? 5 : 15 }
+  if (language.value) query.language = language.value
   return query
 })
 

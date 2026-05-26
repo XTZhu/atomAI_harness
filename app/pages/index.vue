@@ -188,6 +188,8 @@
 import {
   Search, Setting, Close, ArrowLeft, ArrowRight, TrendCharts, FolderOpened,
 } from '@element-plus/icons-vue'
+import { useStorage } from '@vueuse/core'
+import type { GitHubRepo, GitHubRepoDetail } from '~/types'
 
 definePageMeta({ layout: 'default' })
 
@@ -210,7 +212,7 @@ const loading = ref(false)
 const page = ref(1)
 const selectedRepo = ref<GitHubRepoDetail | null>(null)
 const detailLoading = ref(false)
-const { data: recentRepos } = useLocalStorage<{ name: string; owner?: { avatar: string } }[]>('repolens:recent', [])
+const recentRepos = useStorage<{ name: string; owner?: { avatar: string } }[]>('repolens:recent', [])
 
 // 输入框 Ref
 const searchInputRef = ref()

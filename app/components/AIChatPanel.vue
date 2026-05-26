@@ -238,43 +238,23 @@ const panelState = computed<PanelState>(() => {
   return 'active'
 })
 
-// ===== 多仓库对话存储 =====
-const conversations = ref<Map<string, ChatMessage[]>>(new Map())
-
-// 从 localStorage 恢复会话列表（仅 repo 名，不含消息内容）
-const restoreSessions = () => {
-  try {
-    const raw = localStorage.getItem('repolens:ai-sessions')
-    if (!raw) return
-    const keys: string[] = JSON.parse(raw)
-    keys.forEach(k => { if (!conversations.value.has(k)) conversations.value.set(k, []) })
-  } catch { /* ignore */ }
-}
-
-const persistSessions = () => {
-  try {
-    const keys = Array.from(conversations.value.keys()).filter(k => k !== '__default__')
-    localStorage.setItem('repolens:ai-sessions', JSON.stringify(keys))
-  } catch { /* ignore */ }
-}
-
-restoreSessions()
+// ===== 多仓库对话存储（vueuse useStorage 自动持久化）=====
+const conversations = useStorage<Record<string, ChatMessage[]>>('repolens:ai-convs', {})
 const activeSessionKey = ref<string | null>(null)
 const messages = ref<ChatMessage[]>([])
 
 const saveCurrent = () => {
   const key = activeSessionKey.value
   if (key && messages.value.length > 0) {
-    conversations.value.set(key, [...messages.value])
-    persistSessions()
+    conversations.value[key] = [...messages.value]
   }
 }
 
 const loadRepo = (key: string) => {
-  if (streaming.value) return // 流式中不允许切换
+  if (streaming.value) return
   saveCurrent()
   activeSessionKey.value = key
-  messages.value = [...(conversations.value.get(key) || [])]
+  messages.value = [...(conversations.value[key] || [])]
   streamContent.value = ''
 }
 
@@ -288,31 +268,21 @@ watch(() => props.isOpen, (open) => {
   if (open && props.repoContext) loadRepo(props.repoContext)
 })
 
-// ===== 仓库搜索 =====
+// ===== 仓库搜索（vueuse useDebounceFn）=====
 const searchQuery = ref('')
 const searchResults = ref<GitHubRepo[]>([])
-let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 const doRepoSearch = async () => {
   const q = searchQuery.value.trim()
   if (!q) { searchResults.value = []; return }
-
   try {
-    const data = await $fetch<{ items: GitHubRepo[] }>('/api/github/search', {
-      query: { q, per_page: 5 },
-    })
+    const data = await $fetch<{ items: GitHubRepo[] }>('/api/github/search', { query: { q, per_page: 5 } })
     searchResults.value = data.items || []
-  } catch {
-    searchResults.value = []
-  }
+  } catch { searchResults.value = [] }
 }
 
-// 输入防抖搜索
-watch(searchQuery, (val) => {
-  if (searchTimer) clearTimeout(searchTimer)
-  if (!val.trim()) { searchResults.value = []; return }
-  searchTimer = setTimeout(() => doRepoSearch(), 300)
-})
+const debouncedSearch = useDebounceFn(doRepoSearch, 300)
+watch(searchQuery, () => debouncedSearch())
 
 const onSearchResultClick = async (repo: GitHubRepo) => {
   searchResults.value = []
@@ -333,7 +303,7 @@ const onSearchResultClick = async (repo: GitHubRepo) => {
 // ===== 最近仓库列表 =====
 const recentRepos = computed(() => {
   const list: { key: string; count: number }[] = []
-  for (const [key, msgs] of conversations.value.entries()) {
+  for (const [key, msgs] of Object.entries(conversations.value)) {
     if (key !== '__default__' && msgs.length > 0) {
       list.push({ key, count: msgs.length })
     }
@@ -366,7 +336,7 @@ const newConversation = () => {
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    conversations.value.set(key, [])
+    delete conversations.value[key]
     messages.value = []
     streamContent.value = ''
     scrollToBottom()

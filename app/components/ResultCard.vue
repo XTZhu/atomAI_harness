@@ -40,6 +40,7 @@
 
 <script setup lang="ts">
 import { Star, Share, Clock, Folder, Cpu } from '@element-plus/icons-vue'
+import dayjs from 'dayjs'
 import type { GitHubRepo } from '~/types'
 
 defineProps<{ repo: GitHubRepo }>()
@@ -52,11 +53,10 @@ defineEmits<{
 const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n)
 
 const formatDate = (d: string) => {
-  const diff = Date.now() - new Date(d).getTime()
-  const days = Math.floor(diff / 86400000)
-  if (days < 1) return '今天'
-  if (days < 30) return `${days}天前`
-  return `${Math.floor(days / 30)}月前`
+  const diff = dayjs().diff(dayjs(d), 'day')
+  if (diff < 1) return '今天'
+  if (diff < 30) return `${diff}天前`
+  return `${Math.floor(diff / 30)}月前`
 }
 </script>
 

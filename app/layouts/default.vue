@@ -152,8 +152,10 @@ import type { Component } from 'vue'
 const route = useRoute()
 const currentRoute = computed(() => route.path)
 
-// ===== 移动端检测（Composable） =====
-const { isMobile } = useMobileDetect()
+import { useMediaQuery } from '@vueuse/core'
+
+// ===== 移动端检测（vueuse useMediaQuery） =====
+const isMobile = useMediaQuery('(max-width: 767px)')
 
 // ===== 侧边栏 =====
 const sidebarCollapsed = ref(false)
