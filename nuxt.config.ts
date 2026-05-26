@@ -27,7 +27,6 @@ export default defineNuxtConfig({
         { rel: 'dns-prefetch', href: 'https://avatars.githubusercontent.com' },
         { rel: 'dns-prefetch', href: 'https://api.github.com' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        { rel: 'alternate icon', href: '/favicon.ico' },
       ],
     },
   },
