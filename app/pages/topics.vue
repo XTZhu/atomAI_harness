@@ -115,4 +115,24 @@ const onTagClick = (tag: string) => {
   cursor: pointer;
   margin: 4px;
 }
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .topics-page {
+    padding: 0 4px;
+  }
+
+  :deep(.el-col-8) {
+    max-width: 50%;
+    flex: 0 0 50%;
+  }
+
+  .section-title {
+    font-size: 14px;
+  }
+
+  .tag-name {
+    font-size: 13px;
+  }
+}
 </style>

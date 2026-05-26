@@ -135,6 +135,16 @@ const renderedHtml = computed(() => {
   color: var(--el-text-color-primary);
 }
 
+.markdown-body :deep(img) {
+  max-width: 100%;
+  max-height: 400px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 10px 0;
+  object-fit: contain;
+}
+
 .markdown-body :deep(hr) {
   border: none;
   border-top: 1px solid var(--el-border-color-lighter);

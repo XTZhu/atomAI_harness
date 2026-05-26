@@ -13,6 +13,46 @@ export interface AIStreamCallbacks {
   onError: (error: Error) => void
 }
 
+/**
+ * 非流式 AI 调用（用于摘要等短文本场景）
+ */
+export async function callAI(
+  messages: AIChatMessage[],
+  options?: { temperature?: number; maxTokens?: number },
+): Promise<string> {
+  const config = useRuntimeConfig()
+  const apiBase = process.env.AI_API_BASE || config.aiApiBase
+  const apiKey = process.env.AI_API_KEY || config.aiApiKey
+  const model = process.env.AI_MODEL || config.aiModel || 'qwen-plus'
+
+  if (!apiBase || !apiKey) {
+    throw new Error('AI API 未配置，请在 .env 中设置 AI_API_BASE 和 AI_API_KEY')
+  }
+
+  const response = await fetch(`${apiBase}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      stream: false,
+      temperature: options?.temperature ?? 0.5,
+      max_tokens: options?.maxTokens ?? 512,
+    }),
+  })
+
+  if (!response.ok) {
+    const errText = await response.text()
+    throw new Error(`AI API 错误 (${response.status}): ${errText}`)
+  }
+
+  const data = await response.json()
+  return data.choices?.[0]?.message?.content || ''
+}
+
 export async function streamAI(
   messages: AIChatMessage[],
   callbacks: AIStreamCallbacks,

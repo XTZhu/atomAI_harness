@@ -1,7 +1,9 @@
 <template>
   <div class="app-layout">
     <!-- ============ 侧边栏 ============ -->
-    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
+    <!-- 移动端遮罩 -->
+    <div v-if="isMobile && sidebarOpen" class="sidebar-overlay" @click="closeSidebar" />
+    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed && !isMobile, open: isMobile && sidebarOpen }">
       <!-- 品牌区 -->
       <div class="brand" @click="navigateTo('/')">
         <div class="brand-icon">
@@ -23,11 +25,11 @@
         </div>
       </div>
 
-      <!-- 导航（展开态） -->
-      <nav class="sidebar-nav" v-show="!sidebarCollapsed">
+      <!--  导航（展开态） -->
+      <nav class="sidebar-nav" v-show="!sidebarCollapsed || isMobile">
         <div class="nav-section">
           <span class="nav-label">探索</span>
-          <el-menu :default-active="currentRoute" router class="nav-menu" background-color="transparent">
+          <el-menu :default-active="currentRoute" router class="nav-menu" background-color="transparent" @select="isMobile && closeSidebar()">
             <el-menu-item index="/">
               <el-icon><Search /></el-icon>
               <span>发现仓库</span>
@@ -41,7 +43,7 @@
       </nav>
 
       <!-- 导航（折叠态） -->
-      <nav v-show="sidebarCollapsed" class="nav-collapsed">
+      <nav v-show="sidebarCollapsed && !isMobile" class="nav-collapsed">
         <el-tooltip content="发现仓库" placement="right">
           <div class="nav-icon" :class="{ active: currentRoute === '/' }" @click="navigateTo('/')">
             <el-icon :size="22"><Search /></el-icon>
@@ -79,6 +81,10 @@
     <!-- ============ 主内容区 ============ -->
     <main class="main-area">
       <header class="top-bar">
+        <!-- 移动端汉堡菜单 -->
+        <button v-if="isMobile" class="hamburger-btn" @click="toggleSidebar" aria-label="菜单">
+          <el-icon :size="20"><component :is="sidebarOpen ? Close : Menu" /></el-icon>
+        </button>
         <nav class="breadcrumb-nav">
           <span
             v-for="(crumb, i) in breadcrumbs"
@@ -126,14 +132,33 @@
 <script setup lang="ts">
 import {
   Search, Moon, Sunny, TrendCharts, Cpu, ArrowRight,
-  HomeFilled, Folder, DArrowLeft,
+  HomeFilled, Folder, DArrowLeft, Menu, Close,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const currentRoute = computed(() => route.path)
 
+// ===== 移动端检测 =====
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+}
+
 // ===== 侧边栏 =====
 const sidebarCollapsed = ref(false)
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => {
+  if (isMobile.value) {
+    sidebarOpen.value = !sidebarOpen.value
+  } else {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+  }
+}
+
+const closeSidebar = () => {
+  sidebarOpen.value = false
+}
 
 // ===== 暗色模式 =====
 const isDark = ref(false)
@@ -153,7 +178,6 @@ provide('openChat', (repoName: string, repoData?: any) => {
   chatOpen.value = true
 })
 
-// 关闭面板时重置上下文
 const handleChatClose = () => {
   chatOpen.value = false
   globalChatRepo.value = null
@@ -198,8 +222,11 @@ const breadcrumbs = computed(() => {
   return items
 })
 
-// ===== 快捷键 + 无障碍 =====
+// ===== 生命周期 =====
 onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+
   const handler = (e: KeyboardEvent) => {
     // ⌘K 聚焦搜索
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -215,15 +242,22 @@ onMounted(() => {
     // ⌘B 折叠侧边栏
     if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
       e.preventDefault()
-      sidebarCollapsed.value = !sidebarCollapsed.value
+      toggleSidebar()
     }
-    // Escape 关闭 AI 面板
-    if (e.key === 'Escape' && chatOpen.value) {
-      chatOpen.value = false
+    // Escape 关闭 AI 面板 / 侧边栏
+    if (e.key === 'Escape') {
+      if (chatOpen.value) {
+        chatOpen.value = false
+      } else if (sidebarOpen.value) {
+        closeSidebar()
+      }
     }
   }
   window.addEventListener('keydown', handler)
-  onUnmounted(() => window.removeEventListener('keydown', handler))
+  onUnmounted(() => {
+    window.removeEventListener('resize', checkMobile)
+    window.removeEventListener('keydown', handler)
+  })
 })
 </script>
 
@@ -269,6 +303,8 @@ onMounted(() => {
 }
 
 .brand-icon {
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   transition: transform 0.25s;
   animation: brandIn 0.5s ease-out;
@@ -437,6 +473,25 @@ onMounted(() => {
   gap: 16px;
 }
 
+/* 移动端汉堡菜单 */
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--el-text-color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hamburger-btn:hover {
+  background: var(--el-fill-color-light);
+}
+
 .breadcrumb-nav {
   display: flex;
   align-items: center;
@@ -494,7 +549,7 @@ onMounted(() => {
 .ai-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(99, 102, 241, 0.5);
-  background: linear-gradient(135deg, var(--el-color-primary-light-1), #7c7ff6);
+  background: linear-gradient(135deg, var(--el-color-primary-light-3), #8b83f8);
 }
 
 /* ============ 页面内容 ============ */
@@ -505,19 +560,59 @@ onMounted(() => {
 }
 
 /* ============ 响应式 ============ */
+/* 侧边栏遮罩（移动端） */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 99;
+  animation: overlayIn 0.25s ease;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @media (max-width: 768px) {
+  /* 显示汉堡菜单 */
+  .hamburger-btn {
+    display: flex;
+  }
+
+  /* 显示遮罩 */
+  .sidebar-overlay {
+    display: block;
+  }
+
   .sidebar {
     position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
     z-index: 100;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 260px;
   }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* 移动端不折叠 */
   .sidebar.collapsed {
     transform: translateX(-100%);
-    width: 220px;
+    width: 260px;
   }
+
   .top-bar {
     padding: 8px 12px;
+    gap: 8px;
   }
+
   .ai-btn span { display: none; }
   .ai-btn { padding: 6px 10px; min-width: auto; }
   .page-body { padding: 12px; }

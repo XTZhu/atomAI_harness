@@ -143,6 +143,11 @@ const onChat = async (item: any) => {
 }
 
 @media (max-width: 600px) {
+  .trending-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
   .trending-hero h2 { font-size: 18px; }
   .trending-page { padding: 0 8px; }
 }

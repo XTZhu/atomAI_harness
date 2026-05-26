@@ -124,11 +124,20 @@
               <el-icon><Cpu /></el-icon> AI 分析
             </el-button>
           </div>
+          <!-- 移动端：底部操作栏替代叠层 -->
+          <div class="result-mobile-actions">
+            <el-button size="small" type="primary" text @click.stop="selectRepo(repo)">
+              详情
+            </el-button>
+            <el-button size="small" type="warning" text @click.stop="handleChatFromResult(repo)">
+              <el-icon><Cpu /></el-icon> AI
+            </el-button>
+          </div>
         </div>
       </div>
 
       <!-- 加载更多 -->
-      <div v-if="totalCount > results.length" class="load-more">
+      <div v-if="totalCount > results.length && !selectedRepo" class="load-more">
         <el-button :loading="loading" @click="loadMore" size="default">
           加载更多仓库
         </el-button>
@@ -150,7 +159,7 @@
     <!-- ============ 仓库详情（覆盖搜索区） ============ -->
     <section v-if="selectedRepo || detailLoading" class="detail-section">
       <div class="detail-back">
-        <el-button text @click="resetSearch">
+        <el-button text @click="backToResults">
           <el-icon><ArrowLeft /></el-icon> 返回搜索结果
         </el-button>
       </div>
@@ -322,6 +331,13 @@ const resetSearch = () => {
   results.value = []
   totalCount.value = 0
   keyword.value = ''
+  clearBreadcrumb()
+}
+
+// 返回搜索结果列表（保留搜索状态）
+const backToResults = () => {
+  selectedRepo.value = null
+  detailLoading.value = false
   clearBreadcrumb()
 }
 
@@ -666,9 +682,22 @@ const onSearchBlur = () => { isFocused.value = false }
   background: rgba(30, 30, 40, 0.92);
 }
 
-.result-card:hover .result-overlay {
-  opacity: 1;
-  pointer-events: auto;
+/* 桌面端 hover 显示叠层 */
+@media (hover: hover) and (pointer: fine) {
+  .result-card:hover .result-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* 移动端底部操作栏 */
+.result-mobile-actions {
+  display: none;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .load-more {
@@ -784,5 +813,55 @@ const onSearchBlur = () => { isFocused.value = false }
   .detail-section { padding: 0 12px 24px; }
   .results-section { padding: 0 12px 24px; }
   .explore-section { padding: 0 12px 24px; }
+}
+
+@media (max-width: 768px) {
+  .hero-heading { font-size: 22px; }
+  .search-hero { padding: 32px 16px 32px; }
+  .hero-desc { font-size: 12px; margin-bottom: 20px; }
+
+  /* 快捷入口双列 */
+  .quick-entries {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .quick-entry {
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  /* 结果卡片：隐藏叠层，显示底部操作栏 */
+  .result-overlay { display: none; }
+  .result-mobile-actions { display: flex; }
+
+  .result-card:hover {
+    transform: none;
+  }
+
+  /* 最近浏览：移动端显示 */
+  .recent-card {
+    position: static;
+  }
+
+  .explore-grid {
+    gap: 12px;
+  }
+
+  .results-grid {
+    gap: 8px;
+  }
+
+  .result-card {
+    padding: 12px;
+  }
+
+  .search-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
 }
 </style>

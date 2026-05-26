@@ -75,11 +75,12 @@
               {{ item.name }}
             </a>
             <div class="trending-actions" @click.stop>
-              <el-tooltip content="AI 分析">
+              <el-tooltip content="AI 分析" :disabled="isTouchDevice">
                 <el-button
                   text
                   size="small"
                   circle
+                  class="ai-action-btn"
                   @click="$emit('select', item); $emit('chat', item)"
                 >
                   <el-icon :size="14"><Cpu /></el-icon>
@@ -138,6 +139,12 @@ const error = ref('')
 const items = ref<any[]>([])
 const timeRange = ref('weekly')
 const language = ref('')
+
+// 触摸设备检测
+const isTouchDevice = ref(false)
+onMounted(() => {
+  isTouchDevice.value = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+})
 
 const popularLanguages = [
   'TypeScript', 'JavaScript', 'Python', 'Go', 'Rust',
@@ -292,8 +299,14 @@ watch([timeRange, language], () => fetchTrending())
 
 .trending-item:hover {
   background: var(--el-fill-color-light);
-  padding-left: 8px;
-  transform: translateX(4px);
+}
+
+/* 桌面端 hover 位移效果 */
+@media (hover: hover) and (pointer: fine) {
+  .trending-item:hover {
+    padding-left: 8px;
+    transform: translateX(4px);
+  }
 }
 
 .trending-rank {
@@ -344,13 +357,21 @@ watch([timeRange, language], () => fetchTrending())
   flex-shrink: 0;
 }
 
-.trending-actions {
-  opacity: 0;
-  transition: opacity 0.15s;
+/* 桌面端 hover 显示按钮 */
+@media (hover: hover) and (pointer: fine) {
+  .trending-actions {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .trending-item:hover .trending-actions {
+    opacity: 1;
+  }
 }
 
-.trending-item:hover .trending-actions {
-  opacity: 1;
+/* 触摸设备常驻显示 */
+.ai-action-btn {
+  opacity: 1 !important;
 }
 
 .trending-desc {
@@ -405,5 +426,39 @@ watch([timeRange, language], () => fetchTrending())
   padding-top: 12px;
   border-top: 1px solid var(--el-border-color-lighter);
   margin-top: 4px;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 768px) {
+  .trending-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .trending-filters {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .lang-filter {
+    width: 100px;
+  }
+
+  .trending-item {
+    padding: 10px 2px;
+  }
+
+  .trending-meta {
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  .trending-name {
+    font-size: 13px;
+  }
+
+  .trending-desc {
+    font-size: 11px;
+  }
 }
 </style>

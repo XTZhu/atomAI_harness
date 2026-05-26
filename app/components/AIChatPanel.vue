@@ -482,5 +482,11 @@ const scrollToBottom = () => {
 /* ===== 响应式 ===== */
 @media (max-width: 520px) {
   .chat-panel { width: 100vw; }
+  .chat-header { padding: 12px 14px; }
+  .chat-messages { padding: 12px 14px; }
+  .chat-input { padding: 8px 14px 12px; }
+  .chat-welcome { padding: 24px 16px; }
+  .quick-prompts { gap: 4px; }
+  .prompt-tag { font-size: 11px; padding: 0 10px; }
 }
 </style>
