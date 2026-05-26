@@ -12,14 +12,17 @@
           <div class="chat-actions">
             <!-- 新建对话（disabled 时包一层 span 让 tooltip 生效） -->
             <el-tooltip :content="newConversationTooltip" placement="bottom" :disabled="canNewConversation">
-              <span v-if="!canNewConversation" class="disabled-btn-wrap">
-                <el-button text circle disabled>
+              <span class="action-btn-wrap">
+                <el-button
+                  text
+                  circle
+                  :disabled="!canNewConversation"
+                  :class="{ 'btn-new-chat': canNewConversation }"
+                  @click="newConversation"
+                >
                   <el-icon :size="16"><Plus /></el-icon>
                 </el-button>
               </span>
-              <el-button v-else text circle @click="newConversation">
-                <el-icon :size="16"><Plus /></el-icon>
-              </el-button>
             </el-tooltip>
             <el-tooltip content="关闭面板" placement="bottom">
               <el-button text circle @click="closePanel">
@@ -561,8 +564,14 @@ const scrollToBottom = () => {
 
 .model-tag { font-size: 10px; letter-spacing: 0.5px; flex-shrink: 0; }
 
-/* disabled 按钮 tooltip 包裹 */
-.disabled-btn-wrap { display: inline-flex; }
+/* tooltip 包裹层 */
+.action-btn-wrap { display: inline-flex; }
+
+/* 新建对话按钮激活态 */
+.btn-new-chat:hover {
+  color: var(--el-color-primary) !important;
+  background: var(--el-color-primary-light-9) !important;
+}
 
 /* ===== 搜索条 ===== */
 .chat-search-bar {
