@@ -366,6 +366,9 @@ const closePanel = () => {
 const removeContext = () => {
   if (streaming.value) stopStreaming()
   saveCurrent()
+  activeSessionKey.value = null
+  messages.value = []
+  streamContent.value = ''
   emit('clear-context')
 }
 
