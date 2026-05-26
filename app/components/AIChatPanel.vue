@@ -10,8 +10,7 @@
             <el-tag size="small" type="warning" effect="dark" round class="model-tag">{{ aiModelName }}</el-tag>
           </div>
           <div class="chat-actions">
-            <!-- 新建对话（disabled 时包一层 span 让 tooltip 生效） -->
-            <el-tooltip :content="newConversationTooltip" placement="bottom" :disabled="canNewConversation">
+            <el-tooltip :content="newConversationTooltip" placement="bottom">
               <span class="action-btn-wrap">
                 <el-button
                   text
@@ -325,6 +324,12 @@ const recentRepos = computed(() => {
 const canNewConversation = computed(() =>
   panelState.value === 'ready' || panelState.value === 'active'
 )
+
+const newConversationTooltip = computed(() => {
+  if (!hasActiveRepo.value) return '请先选择一个仓库'
+  if (!canNewConversation.value) return 'AI 正在生成中'
+  return messages.value.length > 0 ? '清空并新建对话' : '已是新对话'
+})
 
 const newConversation = () => {
   if (!hasActiveRepo.value || !canNewConversation.value) return
