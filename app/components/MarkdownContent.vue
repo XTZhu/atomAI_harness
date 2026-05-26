@@ -1,5 +1,5 @@
 <template>
-  <div class="markdown-body" v-html="renderedHtml"></div>
+  <div ref="containerRef" class="markdown-body" v-html="renderedHtml" @click="onLinkClick"></div>
 </template>
 
 <script setup lang="ts">
@@ -9,7 +9,10 @@ import 'highlight.js/styles/github-dark.css'
 
 const props = defineProps<{
   content: string
+  repoName?: string
 }>()
+
+const containerRef = ref<HTMLElement>()
 
 // 配置 marked
 marked.setOptions({
@@ -37,6 +40,42 @@ const renderedHtml = computed(() => {
     return `<p>${props.content}</p>`
   }
 })
+
+// ===== 内部链接处理 =====
+const isExternal = (href: string) => /^https?:\/\//i.test(href)
+const isAnchor = (href: string) => href.startsWith('#')
+
+const onLinkClick = (e: MouseEvent) => {
+  const target = e.target as HTMLElement
+  const link = target.closest('a')
+  if (!link) return
+
+  const href = link.getAttribute('href') || ''
+  if (!href || isAnchor(href)) return
+
+  e.preventDefault()
+
+  let finalUrl: string
+  if (isExternal(href)) {
+    finalUrl = href
+  } else if (props.repoName) {
+    // 内部相对链接 → 拼接到 GitHub 仓库
+    const base = `https://github.com/${props.repoName}`
+    const path = href.startsWith('/') ? href : `/${href}`
+    // 推断是文件链接还是目录链接
+    if (href.includes('#')) {
+      // 带锚点的链接
+      const [filePath, anchor] = href.split('#')
+      finalUrl = `${base}/blob/main${filePath.startsWith('/') ? filePath : `/${filePath}`}#${anchor}`
+    } else {
+      finalUrl = `${base}/blob/main${path}`
+    }
+  } else {
+    return
+  }
+
+  window.open(finalUrl, '_blank', 'noopener')
+}
 </script>
 
 <style scoped>
@@ -128,6 +167,11 @@ const renderedHtml = computed(() => {
 
 .markdown-body :deep(a) {
   color: var(--el-color-primary);
+  cursor: pointer;
+}
+
+.markdown-body :deep(a:hover) {
+  text-decoration: underline;
 }
 
 .markdown-body :deep(strong) {

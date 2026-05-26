@@ -143,7 +143,7 @@
           </div>
         </template>
         <div class="readme-preview">
-          <MarkdownContent :content="readmePreview" />
+          <MarkdownContent :content="readmePreview" :repo-name="repo.name" />
           <div v-if="repo.readme.length > MAX_LENGTH" class="readme-truncated">
             <el-divider />
             <span>README 内容较长，仅展示前 {{ MAX_LENGTH }} 字符。</span>
