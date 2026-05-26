@@ -145,6 +145,7 @@
 
 <script setup lang="ts">
 import { Cpu, Delete, Close, User, Promotion, VideoPause } from '@element-plus/icons-vue'
+import type { AIChatMessage, SSEEvent, GitHubRepoDetail } from '~/types'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -154,7 +155,7 @@ interface ChatMessage {
 const props = defineProps<{
   isOpen: boolean
   repoContext: string | null
-  repoData: any | null
+  repoData: GitHubRepoDetail | null
 }>()
 
 const emit = defineEmits<{

@@ -92,48 +92,14 @@
 
       <!-- 搜索结果列表 -->
       <div v-if="results.length && !selectedRepo && !searchError" class="results-grid">
-        <div
-          v-for="repo in results"
+        <ResultCard
+          v-for="(repo, idx) in results"
           :key="repo.id"
-          class="result-card"
-          @click="selectRepo(repo)"
-        >
-          <div class="result-header">
-            <el-avatar :size="28" :src="repo.owner?.avatar" class="result-avatar" />
-            <span class="result-name">{{ repo.name }}</span>
-            <el-tag v-if="repo.language" size="small" class="result-lang">{{ repo.language }}</el-tag>
-          </div>
-          <p class="result-desc">{{ repo.description || '暂无描述' }}</p>
-          <div class="result-meta">
-            <span class="meta-stat">
-              <el-icon :size="13"><Star /></el-icon> {{ formatNum(repo.stars) }}
-            </span>
-            <span class="meta-stat">
-              <el-icon :size="13"><Share /></el-icon> {{ formatNum(repo.forks) }}
-            </span>
-            <span class="meta-stat">
-              <el-icon :size="13"><Clock /></el-icon> {{ formatDate(repo.updatedAt) }}
-            </span>
-          </div>
-          <!-- Hover 操作 -->
-          <div class="result-overlay">
-            <el-button size="small" type="primary" plain @click.stop="selectRepo(repo)">
-              <el-icon><Folder /></el-icon> 详情
-            </el-button>
-            <el-button size="small" type="warning" plain @click.stop="handleChatFromResult(repo)">
-              <el-icon><Cpu /></el-icon> AI 分析
-            </el-button>
-          </div>
-          <!-- 移动端：底部操作栏替代叠层 -->
-          <div class="result-mobile-actions">
-            <el-button size="small" type="primary" text @click.stop="selectRepo(repo)">
-              详情
-            </el-button>
-            <el-button size="small" type="warning" text @click.stop="handleChatFromResult(repo)">
-              <el-icon><Cpu /></el-icon> AI
-            </el-button>
-          </div>
-        </div>
+          :repo="repo"
+          :style="{ animationDelay: idx * 0.05 + 's' }"
+          @select="selectRepo"
+          @chat="handleChatFromResult"
+        />
       </div>
 
       <!-- 加载更多 -->
@@ -220,8 +186,7 @@
 
 <script setup lang="ts">
 import {
-  Search, Star, Share, Clock, Folder, Cpu, Setting,
-  Close, ArrowLeft, ArrowRight, TrendCharts, FolderOpened,
+  Search, Setting, Close, ArrowLeft, ArrowRight, TrendCharts, FolderOpened,
 } from '@element-plus/icons-vue'
 
 definePageMeta({ layout: 'default' })
@@ -236,16 +201,16 @@ const openChatPanel = inject<(name: string, data?: any) => void>('openChat', () 
 
 // ===== 状态 =====
 const keyword = ref('')
-const results = ref<any[]>([])
+const results = ref<GitHubRepo[]>([])
 const totalCount = ref(0)
 const searchError = ref('')
 const searched = ref(false)
 const searchQuery = ref('')
 const loading = ref(false)
 const page = ref(1)
-const selectedRepo = ref<any>(null)
+const selectedRepo = ref<GitHubRepoDetail | null>(null)
 const detailLoading = ref(false)
-const recentRepos = ref<any[]>([])
+const recentRepos = ref<{ name: string; owner?: { avatar: string } }[]>([])
 
 // 输入框 Ref
 const searchInputRef = ref()
@@ -348,7 +313,7 @@ const quickSearch = (q: string) => {
 }
 
 // ===== 仓库选择 =====
-const selectRepo = async (repo: any) => {
+const selectRepo = async (repo: GitHubRepo) => {
   const name = repo.name || repo.full_name
   detailLoading.value = true
   selectedRepo.value = null
@@ -375,7 +340,7 @@ const openChat = (repo: any) => {
 }
 
 // 从趋势/搜索结果打开 AI 面板（先获取详情再打开）
-const handleChatFromTrending = async (item: any) => {
+const handleChatFromTrending = async (item: GitHubRepo) => {
   const name = item.name || item.full_name
   detailLoading.value = true
   selectedRepo.value = null
@@ -393,26 +358,16 @@ const handleChatFromTrending = async (item: any) => {
   }
 }
 
-const handleChatFromResult = async (repo: any) => {
+const handleChatFromResult = async (repo: GitHubRepo) => {
   await handleChatFromTrending(repo)
 }
 
 // ===== 最近浏览 =====
-const addRecent = (repo: { name: string; owner?: any }) => {
+const addRecent = (repo: { name: string; owner?: { avatar: string } }) => {
   recentRepos.value = [
     repo,
     ...recentRepos.value.filter(r => r.name !== repo.name),
   ].slice(0, 6)
-}
-
-// ===== 工具函数 =====
-const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n)
-const formatDate = (d: string) => {
-  const diff = Date.now() - new Date(d).getTime()
-  const days = Math.floor(diff / 86400000)
-  if (days < 1) return '今天'
-  if (days < 30) return `${days}天前`
-  return `${Math.floor(days / 30)}月前`
 }
 
 // ===== 搜索框焦点效果 =====
@@ -588,117 +543,6 @@ const onSearchBlur = () => { isFocused.value = false }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 12px;
-}
-
-.result-card {
-  position: relative;
-  padding: 16px;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  overflow: hidden;
-  background: var(--el-bg-color);
-  animation: cardIn 0.35s ease-out both;
-}
-
-.result-card:nth-child(1) { animation-delay: 0.03s; }
-.result-card:nth-child(2) { animation-delay: 0.08s; }
-.result-card:nth-child(3) { animation-delay: 0.13s; }
-.result-card:nth-child(4) { animation-delay: 0.18s; }
-.result-card:nth-child(5) { animation-delay: 0.23s; }
-.result-card:nth-child(6) { animation-delay: 0.28s; }
-
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.result-card:hover {
-  border-color: var(--el-color-primary-light-5);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
-
-.result-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.result-avatar { flex-shrink: 0; }
-
-.result-name {
-  font-weight: 600;
-  font-size: 14px;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.result-lang { flex-shrink: 0; }
-
-.result-desc {
-  font-size: 13px;
-  color: var(--el-text-color-secondary);
-  margin: 0 0 12px;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.result-meta {
-  display: flex;
-  gap: 16px;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-}
-
-.meta-stat {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-/* Hover 覆盖层 */
-.result-overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
-
-.dark .result-overlay {
-  background: rgba(30, 30, 40, 0.92);
-}
-
-/* 桌面端 hover 显示叠层 */
-@media (hover: hover) and (pointer: fine) {
-  .result-card:hover .result-overlay {
-    opacity: 1;
-    pointer-events: auto;
-  }
-}
-
-/* 移动端底部操作栏 */
-.result-mobile-actions {
-  display: none;
-  justify-content: flex-end;
-  gap: 4px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .load-more {

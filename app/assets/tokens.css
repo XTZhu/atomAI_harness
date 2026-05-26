@@ -1,0 +1,36 @@
+/* ===== RepoLens 设计令牌 ===== */
+
+:root {
+  /* 品牌渐变色 */
+  --rl-gradient-brand: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --rl-gradient-hero: linear-gradient(135deg, var(--el-color-primary), #8b5cf6);
+  --rl-gradient-hover: linear-gradient(135deg, #7c3aed, #ec4899);
+  --rl-gradient-card: linear-gradient(135deg, var(--el-color-primary-light-9), var(--el-color-warning-light-9));
+
+  /* AI 分析按钮 */
+  --rl-gradient-ai: linear-gradient(135deg, var(--el-color-primary), #7c3aed);
+  --rl-gradient-ai-hover: linear-gradient(135deg, #7c3aed, #ec4899);
+  --rl-ai-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+  --rl-ai-shadow-hover: 0 4px 16px rgba(124, 58, 237, 0.4);
+
+  /* 排名徽章 */
+  --rl-gradient-rank-1: linear-gradient(135deg, #f59e0b, #f97316);
+  --rl-gradient-rank-2: linear-gradient(135deg, #94a3b8, #64748b);
+  --rl-gradient-rank-3: linear-gradient(135deg, #cd7f32, #a0522d);
+
+  /* 总结标签 */
+  --rl-gradient-what: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --rl-gradient-how: linear-gradient(135deg, #06b6d4, #3b82f6);
+  --rl-gradient-why: linear-gradient(135deg, #f59e0b, #ef4444);
+
+  /* 间距 */
+  --rl-radius-sm: 6px;
+  --rl-radius-md: 8px;
+  --rl-radius-lg: 12px;
+  --rl-radius-xl: 20px;
+
+  /* 动画 */
+  --rl-transition-fast: 0.15s;
+  --rl-transition-normal: 0.25s;
+  --rl-transition-slow: 0.35s;
+}

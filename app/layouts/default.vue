@@ -150,11 +150,8 @@ import {
 const route = useRoute()
 const currentRoute = computed(() => route.path)
 
-// ===== 移动端检测 =====
-const isMobile = ref(false)
-const checkMobile = () => {
-  isMobile.value = window.innerWidth < 768
-}
+// ===== 移动端检测（Composable） =====
+const { isMobile } = useMobileDetect()
 
 // ===== 侧边栏 =====
 const sidebarCollapsed = ref(false)
@@ -240,9 +237,6 @@ const breadcrumbs = computed(() => {
 
 // ===== 生命周期 =====
 onMounted(() => {
-  checkMobile()
-  window.addEventListener('resize', checkMobile)
-
   const handler = (e: KeyboardEvent) => {
     // ⌘K 聚焦搜索
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -270,10 +264,7 @@ onMounted(() => {
     }
   }
   window.addEventListener('keydown', handler)
-  onUnmounted(() => {
-    window.removeEventListener('resize', checkMobile)
-    window.removeEventListener('keydown', handler)
-  })
+  onUnmounted(() => { window.removeEventListener('keydown', handler) })
 })
 </script>
 

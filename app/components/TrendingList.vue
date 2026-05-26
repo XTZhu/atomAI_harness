@@ -120,6 +120,7 @@
 
 <script setup lang="ts">
 import { Star, Share, TrendCharts, Cpu, Top, ArrowRight } from '@element-plus/icons-vue'
+import type { GitHubRepo, TrendRange, LangColorMap } from '~/types'
 
 const props = withDefaults(defineProps<{
   showFilters?: boolean
@@ -130,14 +131,11 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  select: [repo: any]
-  chat: [repo: any]
+  select: [repo: GitHubRepo]
+  chat: [repo: GitHubRepo]
 }>()
 
-const loading = ref(true)
-const error = ref('')
-const items = ref<any[]>([])
-const timeRange = ref('weekly')
+const timeRange = ref<TrendRange>('weekly')
 const language = ref('')
 
 // 触摸设备检测
@@ -151,7 +149,7 @@ const popularLanguages = [
   'Java', 'Vue', 'Ruby', 'Swift', 'Kotlin', 'C++', 'C',
 ]
 
-const langColors: Record<string, string> = {
+const langColors: LangColorMap = {
   TypeScript: '#3178c6', JavaScript: '#f7df1e', Python: '#3572a5',
   Go: '#00add8', Rust: '#dea584', Java: '#b07219', Vue: '#41b883',
   Ruby: '#701516', 'C++': '#f34b7d', C: '#555555', Swift: '#f05138',
@@ -166,37 +164,23 @@ const formatNum = (n: number) => {
   return n.toLocaleString()
 }
 
-const fetchTrending = async () => {
-  loading.value = true
-  error.value = ''
-  try {
-    // 根据时间范围计算日期
-    const now = new Date()
-    let since = ''
-    if (timeRange.value === 'daily') {
-      since = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    } else if (timeRange.value === 'weekly') {
-      since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    } else {
-      since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    }
-
-    const data = await $fetch('/api/github/trending', {
-      query: {
-        since,
-        language: language.value || undefined,
-        per_page: props.compact ? 5 : 15,
-      },
-    })
-    items.value = data.items || []
-  } catch (err: any) {
-    error.value = err.message || '加载失败'
-    // 静默降级：API 不可用时不影响页面
-    console.warn('Trending fetch failed:', err.message)
-  } finally {
-    loading.value = false
+// 构建查询参数
+const buildQuery = () => {
+  const now = new Date()
+  const ranges: Record<TrendRange, number> = { daily: 1, weekly: 7, monthly: 30 }
+  const since = new Date(now.getTime() - ranges[timeRange.value] * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  return {
+    since,
+    language: language.value || undefined,
+    per_page: props.compact ? 5 : 15,
   }
 }
+
+const { data: trendingData, loading, error, refresh: fetchTrending } = useAsyncData<{ items: GitHubRepo[] }>(() =>
+  $fetch('/api/github/trending', { query: buildQuery() })
+)
+
+const items = computed(() => trendingData.value?.items || [])
 
 onMounted(fetchTrending)
 

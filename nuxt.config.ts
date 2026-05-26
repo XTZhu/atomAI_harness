@@ -31,7 +31,7 @@ export default defineNuxtConfig({
     },
   },
 
-  css: ['element-plus/theme-chalk/dark/css-vars.css'],
+  css: ['element-plus/theme-chalk/dark/css-vars.css', '~/assets/tokens.css'],
 
   runtimeConfig: {
     githubToken: '',
