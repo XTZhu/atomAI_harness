@@ -8,22 +8,34 @@
             <el-icon :size="20"><Cpu /></el-icon>
             <span>AI 代码助手</span>
             <el-tag size="small" type="warning" effect="dark" round class="model-tag">{{ aiModelName }}</el-tag>
-            <!-- Repo 上下文标签（可单独移除） -->
-            <el-tag
-              v-if="repoContext"
-              size="small"
-              type="info"
-              effect="plain"
-              class="repo-context-tag"
-              closable
-              @close="removeContext"
-            >
-              {{ repoContext }}
-            </el-tag>
           </div>
           <div class="chat-actions">
-            <el-tooltip content="清除对话" placement="bottom">
-              <el-button text circle @click="clearChat">
+            <!-- 会话选择 -->
+            <el-dropdown v-if="sessions.length > 0" trigger="click" @command="switchSession">
+              <el-button text size="small" class="session-btn">
+                <el-icon :size="16"><ChatLineSquare /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item
+                    v-for="s in sessions"
+                    :key="s.key"
+                    :command="s.key"
+                    :class="{ 'is-active': s.key === activeSessionKey }"
+                  >
+                    <div class="session-item">
+                      <span class="session-repo">{{ s.key }}</span>
+                      <span class="session-count">{{ s.count }} 条</span>
+                    </div>
+                  </el-dropdown-item>
+                  <el-dropdown-item v-if="sessions.length > 0" divided command="__clear_all__">
+                    <el-icon><Delete /></el-icon> 清除所有会话
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-tooltip content="清除当前对话" placement="bottom">
+              <el-button text circle @click="clearCurrentSession">
                 <el-icon><Delete /></el-icon>
               </el-button>
             </el-tooltip>
@@ -33,6 +45,15 @@
               </el-button>
             </el-tooltip>
           </div>
+        </div>
+
+        <!-- Repo 上下文指示条 -->
+        <div v-if="repoContext" class="chat-context-bar">
+          <el-icon :size="14"><Folder /></el-icon>
+          <span class="context-repo-name">{{ repoContext }}</span>
+          <el-button text size="small" class="context-switch-btn" @click="removeContext">
+            <el-icon :size="12"><Close /></el-icon>
+          </el-button>
         </div>
 
         <!-- 消息列表 -->
@@ -144,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { Cpu, Delete, Close, User, Promotion, VideoPause } from '@element-plus/icons-vue'
+import { Cpu, Delete, Close, User, Promotion, VideoPause, ChatLineSquare, Folder } from '@element-plus/icons-vue'
 import type { AIChatMessage, SSEEvent, GitHubRepoDetail } from '~/types'
 
 interface ChatMessage {
@@ -165,7 +186,6 @@ const emit = defineEmits<{
 
 const messageListRef = ref<HTMLElement>()
 const inputText = ref('')
-const messages = ref<ChatMessage[]>([])
 const streaming = ref(false)
 const loading = ref(false)
 const streamContent = ref('')
@@ -174,6 +194,78 @@ const abortController = ref<AbortController | null>(null)
 // ===== 模型名称 =====
 const config = useRuntimeConfig()
 const aiModelName = computed(() => config.public.aiModel || 'AI')
+
+// ===== 多仓库会话管理 =====
+type SessionStore = Map<string, ChatMessage[]>
+const sessionStore = ref<SessionStore>(new Map())
+const activeSessionKey = ref<string | null>(null)
+
+// 当前激活会话的消息
+const messages = ref<ChatMessage[]>([])
+
+// 同步会话到 store
+const syncToStore = () => {
+  const key = activeSessionKey.value || (props.repoContext || '__default__')
+  sessionStore.value.set(key, [...messages.value])
+}
+
+// 从 store 加载会话
+const loadFromStore = (key: string) => {
+  messages.value = [...(sessionStore.value.get(key) || [])]
+}
+
+// 所有会话列表（供下拉菜单）
+const sessions = computed(() => {
+  const list: { key: string; count: number }[] = []
+  for (const [key, msgs] of sessionStore.value.entries()) {
+    if (key !== '__default__' || msgs.length > 0) {
+      list.push({ key, count: msgs.length })
+    }
+  }
+  return list
+})
+
+// 切换到指定仓库会话
+const loadSession = (key: string) => {
+  // 先保存当前会话
+  syncToStore()
+  // 切换并加载
+  activeSessionKey.value = key
+  loadFromStore(key)
+}
+
+// 当外部 repoContext 变化时，自动切换会话
+watch(() => props.repoContext, (newRepo) => {
+  if (newRepo) {
+    loadSession(newRepo)
+  }
+})
+
+// 当面板打开且有 repoContext 时，确保加载会话
+watch(() => props.isOpen, (open) => {
+  if (open && props.repoContext) {
+    loadSession(props.repoContext)
+  }
+})
+
+const switchSession = (key: string) => {
+  if (key === '__clear_all__') {
+    sessionStore.value.clear()
+    messages.value = []
+    activeSessionKey.value = null
+    if (props.repoContext) {
+      loadSession(props.repoContext)
+    }
+    return
+  }
+  loadSession(key)
+}
+
+const clearCurrentSession = () => {
+  messages.value = []
+  streamContent.value = ''
+  syncToStore()
+}
 
 // 根据是否有 repo 上下文切换快捷问题
 const quickPrompts = computed(() => {
@@ -203,12 +295,6 @@ const removeContext = () => {
   emit('clear-context')
 }
 
-const clearChat = () => {
-  messages.value = []
-  streamContent.value = ''
-  emit('clear-context')
-}
-
 // ===== 停止流式输出 =====
 const stopStreaming = () => {
   if (abortController.value) {
@@ -218,6 +304,7 @@ const stopStreaming = () => {
   // 把已输出的内容作为一条消息保存
   if (streamContent.value) {
     messages.value.push({ role: 'assistant', content: streamContent.value + '\n\n*[已停止生成]*' })
+    syncToStore()
   }
   streamContent.value = ''
   streaming.value = false
@@ -233,6 +320,7 @@ const handleSend = () => {
 
 const sendMessage = async (text: string) => {
   messages.value.push({ role: 'user', content: text })
+  syncToStore()
   scrollToBottom()
 
   const repoContext = props.repoData
@@ -292,6 +380,7 @@ const sendMessage = async (text: string) => {
             scrollToBottom()
           } else if (data.type === 'done') {
             messages.value.push({ role: 'assistant', content: data.fullText })
+            syncToStore()
             streamContent.value = ''
             streaming.value = false
             abortController.value = null
@@ -375,24 +464,65 @@ const scrollToBottom = () => {
 }
 .chat-actions { display: flex; gap: 2px; }
 
+/* 会话按钮 */
+.session-btn {
+  color: var(--el-text-color-secondary);
+  transition: color 0.15s;
+}
+.session-btn:hover { color: var(--el-color-primary); }
+
+/* 会话下拉项 */
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 140px;
+}
+.session-repo {
+  font-weight: 500;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+.session-count {
+  font-size: 11px;
+  color: var(--el-text-color-placeholder);
+  flex-shrink: 0;
+}
+
+/* Repo 上下文指示条 */
+.chat-context-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: var(--el-color-primary-light-9);
+  border-bottom: 1px solid var(--el-color-primary-light-7);
+  font-size: 13px;
+  color: var(--el-color-primary);
+  flex-shrink: 0;
+}
+.context-repo-name {
+  flex: 1;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.context-switch-btn {
+  flex-shrink: 0;
+  color: var(--el-text-color-secondary);
+}
+.context-switch-btn:hover { color: var(--el-color-danger); }
+
 /* 模型标签 */
 .model-tag {
   font-size: 10px;
   letter-spacing: 0.5px;
   flex-shrink: 0;
-}
-
-/* 仓库上下文标签截断 */
-.repo-context-tag {
-  max-width: 180px;
-  flex-shrink: 0;
-}
-
-.repo-context-tag :deep(.el-tag__content) {
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* ===== 消息区 ===== */

@@ -35,7 +35,19 @@ marked.setOptions({
 const renderedHtml = computed(() => {
   if (!props.content) return ''
   try {
-    return marked.parse(props.content) as string
+    let html = marked.parse(props.content) as string
+    // 将相对图片 src 转为 GitHub 绝对 URL
+    if (props.repoName) {
+      html = html.replace(
+        /<img\s+[^>]*src="(?!https?:\/\/)([^"]+)"/gi,
+        (match, src) => {
+          const path = src.startsWith('/') ? src : `/${src}`
+          const newSrc = `https://raw.githubusercontent.com/${props.repoName}/main${path}`
+          return match.replace(`src="${src}"`, `src="${newSrc}"`)
+        }
+      )
+    }
+    return html
   } catch {
     return `<p>${props.content}</p>`
   }
