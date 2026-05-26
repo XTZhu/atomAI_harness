@@ -10,8 +10,8 @@
             <el-tag size="small" type="warning" effect="dark" round class="model-tag">{{ aiModelName }}</el-tag>
           </div>
           <div class="chat-actions">
-            <el-tooltip content="新建对话" placement="bottom">
-              <el-button text circle @click="newConversation">
+            <el-tooltip :content="newConversationTooltip" placement="bottom">
+              <el-button text circle :disabled="!canNewConversation" @click="newConversation">
                 <el-icon :size="16"><Plus /></el-icon>
               </el-button>
             </el-tooltip>
@@ -72,10 +72,10 @@
             </p>
             <div class="quick-prompts">
               <el-tag
-                v-for="prompt in currentPrompts"
+                v-for="prompt in quickPrompts"
                 :key="prompt"
                 class="prompt-tag"
-                @click="sendMessage(prompt)"
+                @click="onPromptClick(prompt)"
               >
                 {{ prompt }}
               </el-tag>
@@ -137,16 +137,16 @@
             v-model="inputText"
             type="textarea"
             :rows="2"
-            :placeholder="repoContext ? '输入你的问题...' : '请先选择一个仓库'"
+            :placeholder="inputPlaceholder"
             resize="none"
-            :disabled="streaming || !repoContext"
+            :disabled="!canSend"
             @keydown.enter.exact.prevent="handleSend"
           >
             <template #suffix>
               <el-button
                 v-if="!streaming"
                 type="primary"
-                :disabled="!inputText.trim() || !repoContext"
+                :disabled="!inputText.trim() || !canSend"
                 :loading="loading"
                 circle
                 size="small"
@@ -167,10 +167,7 @@
 import { Cpu, Close, User, Promotion, VideoPause, Folder, Plus, InfoFilled } from '@element-plus/icons-vue'
 import type { GitHubRepoDetail } from '~/types'
 
-interface ChatMessage {
-  role: 'user' | 'assistant'
-  content: string
-}
+interface ChatMessage { role: 'user' | 'assistant'; content: string }
 
 const props = defineProps<{
   isOpen: boolean
@@ -178,11 +175,9 @@ const props = defineProps<{
   repoData: GitHubRepoDetail | null
 }>()
 
-const emit = defineEmits<{
-  close: []
-  'clear-context': []
-}>()
+const emit = defineEmits<{ close: []; 'clear-context': [] }>()
 
+// ===== Refs =====
 const messageListRef = ref<HTMLElement>()
 const inputText = ref('')
 const streaming = ref(false)
@@ -190,16 +185,25 @@ const loading = ref(false)
 const streamContent = ref('')
 const abortController = ref<AbortController | null>(null)
 
-// ===== 模型名称 =====
+// ===== 模型 =====
 const config = useRuntimeConfig()
 const aiModelName = computed(() => config.public.aiModel || 'AI')
+
+// ===== 状态枚举 =====
+type PanelState = 'idle' | 'ready' | 'active' | 'streaming' | 'loading'
+const panelState = computed<PanelState>(() => {
+  if (!props.repoContext) return 'idle'
+  if (streaming.value) return 'streaming'
+  if (loading.value) return 'loading'
+  if (messages.value.length === 0) return 'ready'
+  return 'active'
+})
 
 // ===== 多仓库对话存储 =====
 const conversations = ref<Map<string, ChatMessage[]>>(new Map())
 const activeSessionKey = ref<string | null>(null)
 const messages = ref<ChatMessage[]>([])
 
-// 保存当前对话到 store
 const saveCurrent = () => {
   const key = activeSessionKey.value
   if (key && messages.value.length > 0) {
@@ -207,49 +211,79 @@ const saveCurrent = () => {
   }
 }
 
-// 加载指定仓库对话
 const loadRepo = (key: string) => {
+  if (streaming.value) return // 流式中不允许切换
   saveCurrent()
   activeSessionKey.value = key
   messages.value = [...(conversations.value.get(key) || [])]
   streamContent.value = ''
 }
 
-// 监听外部 repoContext 变化 → 自动切换
+// 外部 repoContext 变化 → 自动切换
 watch(() => props.repoContext, (newRepo) => {
   if (newRepo) loadRepo(newRepo)
 })
 
-// 面板打开时有 repoContext 就加载
+// 面板打开 + 有 repo → 加载
 watch(() => props.isOpen, (open) => {
   if (open && props.repoContext) loadRepo(props.repoContext)
 })
 
-// 最近分析的仓库列表
+// ===== 最近仓库列表 =====
 const recentRepos = computed(() => {
   const list: { key: string; count: number }[] = []
   for (const [key, msgs] of conversations.value.entries()) {
-    if (msgs.length > 0) {
+    if (key !== '__default__' && msgs.length > 0) {
       list.push({ key, count: msgs.length })
     }
   }
-  // 最近的排前面，最多 5 个
   return list.slice(0, 5)
 })
 
-const switchRepo = (key: string) => {
-  // 通知父组件切换上下文
-  loadRepo(key)
-}
+// ===== 操作：新建对话 =====
+const canNewConversation = computed(() =>
+  panelState.value === 'ready' || panelState.value === 'active'
+)
 
 const newConversation = () => {
-  if (props.repoContext) {
-    // 为当前仓库新建对话（覆盖旧的）
-    conversations.value.set(props.repoContext, [])
+  if (!props.repoContext || !canNewConversation.value) return
+
+  if (messages.value.length === 0) {
+    ElMessage.info('当前已是新对话')
+    return
+  }
+
+  // 有消息时弹出确认
+  ElMessageBox.confirm('确定清空当前仓库的对话记录？', '新建对话', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    conversations.value.set(props.repoContext!, [])
     messages.value = []
     streamContent.value = ''
     activeSessionKey.value = props.repoContext
-  }
+    scrollToBottom()
+  }).catch(() => {})
+}
+
+// ===== 操作：切换仓库 =====
+const switchRepo = (key: string) => {
+  if (streaming.value) return
+  loadRepo(key)
+}
+
+// ===== 操作：关闭面板 / 移除上下文 =====
+const closePanel = () => {
+  if (streaming.value) stopStreaming()
+  saveCurrent()
+  emit('close')
+}
+
+const removeContext = () => {
+  if (streaming.value) stopStreaming()
+  saveCurrent()
+  emit('clear-context')
 }
 
 // ===== 快捷提问 =====
@@ -269,10 +303,23 @@ const quickPrompts = computed(() => {
   ]
 })
 
-const currentPrompts = computed(() => quickPrompts.value)
+const onPromptClick = (prompt: string) => {
+  if (!props.repoContext || !canSend.value) {
+    ElMessage.info('请先选择一个仓库')
+    return
+  }
+  sendMessage(prompt)
+}
 
-const closePanel = () => emit('close')
-const removeContext = () => emit('clear-context')
+// ===== 输入框 =====
+const inputPlaceholder = computed(() => {
+  switch (panelState.value) {
+    case 'idle': return '请先选择一个仓库'
+    case 'streaming': return 'AI 正在生成中...'
+    case 'loading': return 'AI 正在思考...'
+    default: return '输入你的问题...'
+  }
+})
 
 // ===== 停止流式 =====
 const stopStreaming = () => {
@@ -290,13 +337,19 @@ const stopStreaming = () => {
 }
 
 // ===== 发送消息 =====
+const canSend = computed(() =>
+  panelState.value !== 'idle' && panelState.value !== 'streaming' && panelState.value !== 'loading'
+)
+
 const handleSend = () => {
-  if (!inputText.value.trim() || streaming.value || !props.repoContext) return
+  if (!canSend.value || !inputText.value.trim()) return
   sendMessage(inputText.value)
   inputText.value = ''
 }
 
 const sendMessage = async (text: string) => {
+  if (!canSend.value) return
+
   messages.value.push({ role: 'user', content: text })
   saveCurrent()
   scrollToBottom()
