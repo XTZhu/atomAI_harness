@@ -4,6 +4,7 @@
  * @example
  * const { data, loading, error, refresh } = useAsyncData(() => $fetch('/api/github/repo/vue'))
  */
+import { ref } from 'vue'
 import type { AsyncDataState } from '~/types'
 
 export function useAsyncData<T>(

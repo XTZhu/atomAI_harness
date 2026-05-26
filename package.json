@@ -11,7 +11,9 @@
     "prepare": "husky",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@element-plus/nuxt": "^1.1.5",
@@ -28,13 +30,18 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@nuxt/eslint": "^1.15.2",
+    "@nuxt/test-utils": "^4.0.3",
     "@types/marked": "^6.0.0",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "@vue/test-utils": "^2.4.10",
     "eslint": "^10.4.0",
     "eslint-plugin-vue": "^10.9.1",
+    "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
     "prettier": "^3.8.3",
-    "typescript-eslint": "^8.59.4"
+    "typescript-eslint": "^8.59.4",
+    "vitest": "^4.1.7"
   },
   "lint-staged": {
     "*.{vue,ts,js,mjs,cjs}": [
