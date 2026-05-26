@@ -1,0 +1,459 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "accedddb5bb27488639f4d40ce9cc114414f903f",
+  "generatedAt": "2026-05-26T10:22:24.521Z",
+  "files": {
+    ".husky/pre-commit": {
+      "filePath": ".husky/pre-commit",
+      "contentHash": "e2b7c9733375d7182af2033bda9a7d2a05d0db5eef5be53d26eb7b5f3df8fbc3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": false
+    },
+    ".prettierignore": {
+      "filePath": ".prettierignore",
+      "contentHash": "450d95dc240f191e82628bfaab3ca4532ba90c2d60ea6048c35660bd73d37b5e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": false
+    },
+    ".understand-anything/.understandignore": {
+      "filePath": ".understand-anything/.understandignore",
+      "contentHash": "9558f23e69d05fdae5901d8cd29fae4db3e66d80019c696bd688efb4f0a37b1a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 31,
+      "hasStructuralAnalysis": false
+    },
+    "app/app.vue": {
+      "filePath": "app/app.vue",
+      "contentHash": "649ed4a657a77cd6e2467ceff9aa684e9752c455ed203f00e3f929d535672bc7",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 31,
+      "hasStructuralAnalysis": false
+    },
+    "app/assets/tokens.css": {
+      "filePath": "app/assets/tokens.css",
+      "contentHash": "1b2d18522837c0be975e8189b12b15066dcfce6c639ba39d5f2872f4cb5d474d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 37,
+      "hasStructuralAnalysis": false
+    },
+    "app/components/AIChatPanel.vue": {
+      "filePath": "app/components/AIChatPanel.vue",
+      "contentHash": "fbad000fc7f9c25df6df3471d76c16386cffaf9561a7159afc60936941bc431c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1059,
+      "hasStructuralAnalysis": false
+    },
+    "app/components/ErrorFallback.vue": {
+      "filePath": "app/components/ErrorFallback.vue",
+      "contentHash": "e0d7a3eedcef9fb8ac7ede3463e0faba19b4b92821e18bc2132ca5aefdafd3d9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 31,
+      "hasStructuralAnalysis": false
+    },
+    "app/components/MarkdownContent.vue": {
+      "filePath": "app/components/MarkdownContent.vue",
+      "contentHash": "f5634ea408ed2f2a642672d51687865e5b71e89b4fbd4d44ce4bf47b13ab0a38",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 244,
+      "hasStructuralAnalysis": false
+    },
+    "app/components/RepoDetailCard.vue": {
+      "filePath": "app/components/RepoDetailCard.vue",
+      "contentHash": "6cba9a697c0b1809f4d5d5f502d593077db1247f9749424ca8fa7a465f7a2280",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 643,
+      "hasStructuralAnalysis": false
+    },
+    "app/components/ResultCard.vue": {
+      "filePath": "app/components/ResultCard.vue",
+      "contentHash": "ca580401c54cbf8ce059ae1b28c3a6e563474c26e2ebf3efea1d8cc5351cc3a3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 197,
+      "hasStructuralAnalysis": false
+    },
+    "app/components/TrendingList.vue": {
+      "filePath": "app/components/TrendingList.vue",
+      "contentHash": "b2af86a864e5d8605d8a238da4b0773a78e8c878cce8f0da1183fa8c7315ec84",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 497,
+      "hasStructuralAnalysis": false
+    },
+    "app/composables/useAsyncData.ts": {
+      "filePath": "app/composables/useAsyncData.ts",
+      "contentHash": "14c9659973c621fca8529538c7d11afb14a32545967a5faa90fc0da33c3d1e39",
+      "functions": [
+        {
+          "name": "useAsyncData",
+          "params": ["fetcher"],
+          "returnType": "AsyncDataState<T> & { data: Ref<T | null>; loading: Ref<boolean>; error: Ref<string> }",
+          "exported": true,
+          "lineCount": 22
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "vue",
+          "specifiers": ["ref"]
+        },
+        {
+          "source": "~/types",
+          "specifiers": ["AsyncDataState"]
+        }
+      ],
+      "exports": ["useAsyncData"],
+      "totalLines": 32,
+      "hasStructuralAnalysis": true
+    },
+    "app/layouts/default.vue": {
+      "filePath": "app/layouts/default.vue",
+      "contentHash": "f83381dba8a1f8cf8c010201c292236504d4fb3079c8ec3a25909750a011ed3a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 833,
+      "hasStructuralAnalysis": false
+    },
+    "app/pages/index.vue": {
+      "filePath": "app/pages/index.vue",
+      "contentHash": "f7bff840da8f41e4f22be4a3b29348c3ea515b7ae147bd522fa377da44da6311",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 798,
+      "hasStructuralAnalysis": false
+    },
+    "app/pages/topics.vue": {
+      "filePath": "app/pages/topics.vue",
+      "contentHash": "273830c94392d992b1308c3ee7e271095a195a6150bcad1a3032edacd402bd08",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 148,
+      "hasStructuralAnalysis": false
+    },
+    "app/pages/trending.vue": {
+      "filePath": "app/pages/trending.vue",
+      "contentHash": "8a68f8ad1efb7aaa4d6f95a2bdf03dc85b1857c6fff6945c3707142cbcf52e28",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 161,
+      "hasStructuralAnalysis": false
+    },
+    "app/plugins/error-handler.ts": {
+      "filePath": "app/plugins/error-handler.ts",
+      "contentHash": "e1cdf671ddabf0dfd677c3035d14e93a8f20dc48127a0b68a0ba22ea4708737f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 10,
+      "hasStructuralAnalysis": true
+    },
+    "app/types/index.ts": {
+      "filePath": "app/types/index.ts",
+      "contentHash": "885f7284e287f3bcbf6a187c8568fa872da038b43667e075dd86708df9607dfb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 66,
+      "hasStructuralAnalysis": true
+    },
+    "eslint.config.mjs": {
+      "filePath": "eslint.config.mjs",
+      "contentHash": "27de442ddf4a3a2dadc5948976e9c5e6e90316ddb58c5feff88d48ad4def5dcd",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@eslint/js",
+          "specifiers": ["js"]
+        },
+        {
+          "source": "typescript-eslint",
+          "specifiers": ["ts"]
+        },
+        {
+          "source": "eslint-plugin-vue",
+          "specifiers": ["vue"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 24,
+      "hasStructuralAnalysis": true
+    },
+    "nuxt.config.ts": {
+      "filePath": "nuxt.config.ts",
+      "contentHash": "96209f782ebaf200b1aeaa0bf88c0998917c0092e3ba747cf15c4f6d59e50407",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 74,
+      "hasStructuralAnalysis": true
+    },
+    "server/api/ai/chat.post.ts": {
+      "filePath": "server/api/ai/chat.post.ts",
+      "contentHash": "b957ebfb27543e2ead7a6e52c237a74a2da5847850b201ee95165a758e8eec72",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 85,
+      "hasStructuralAnalysis": true
+    },
+    "server/api/ai/summary.post.ts": {
+      "filePath": "server/api/ai/summary.post.ts",
+      "contentHash": "8d8546a540094d8c0921a4ebbe46995807b3c1516bae3cc77cb1f35836bac271",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 47,
+      "hasStructuralAnalysis": true
+    },
+    "server/api/github/repo/[owner]/[repo].get.ts": {
+      "filePath": "server/api/github/repo/[owner]/[repo].get.ts",
+      "contentHash": "67d64ba804a7cb5115404cf39cd202b0256ee7f14b354f5b6d8789dbfda1a055",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 67,
+      "hasStructuralAnalysis": true
+    },
+    "server/api/github/search.get.ts": {
+      "filePath": "server/api/github/search.get.ts",
+      "contentHash": "7f7163e9ab91758d8069ad251a6436a9bacb67c520e843685ac6b358c2c30833",
+      "functions": [
+        {
+          "name": "formatRepo",
+          "params": ["repo"],
+          "exported": false,
+          "lineCount": 23
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 61,
+      "hasStructuralAnalysis": true
+    },
+    "server/api/github/trending.get.ts": {
+      "filePath": "server/api/github/trending.get.ts",
+      "contentHash": "0da6afd49e7897a3e5a7e4710b8b110b1a5a37852f952275c6f5e51708b6e84d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 67,
+      "hasStructuralAnalysis": true
+    },
+    "server/api/github/user/[username].get.ts": {
+      "filePath": "server/api/github/user/[username].get.ts",
+      "contentHash": "f92c52f154f63823c2bdb20e8e5344c6f2ac54819d0081e8930faa138ef6ce35",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 56,
+      "hasStructuralAnalysis": true
+    },
+    "server/utils/ai/provider.ts": {
+      "filePath": "server/utils/ai/provider.ts",
+      "contentHash": "e71e31e548c2eda172848a5d2e372b7a7d1ee407f3d2617e48f060e746aedb68",
+      "functions": [
+        {
+          "name": "callAI",
+          "params": ["messages", "options"],
+          "returnType": "Promise<string>",
+          "exported": true,
+          "lineCount": 36
+        },
+        {
+          "name": "streamAI",
+          "params": ["messages", "callbacks", "options"],
+          "exported": true,
+          "lineCount": 96
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": ["callAI", "streamAI"],
+      "totalLines": 152,
+      "hasStructuralAnalysis": true
+    },
+    "server/utils/cache.ts": {
+      "filePath": "server/utils/cache.ts",
+      "contentHash": "ebdb9bc80a057efe3c0f362c4eeb15b5bc00dbeb26f818132f1104eb45f71600",
+      "functions": [
+        {
+          "name": "getCached",
+          "params": ["key"],
+          "returnType": "T | null",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "setCache",
+          "params": ["key", "data", "ttlMs"],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": ["getCached", "setCache"],
+      "totalLines": 40,
+      "hasStructuralAnalysis": true
+    },
+    "server/utils/github.ts": {
+      "filePath": "server/utils/github.ts",
+      "contentHash": "dd022864ce06165484fc62e5c284f43cc01aefae0da35806ea20570c83d4c217",
+      "functions": [
+        {
+          "name": "useGitHub",
+          "params": [],
+          "returnType": "Octokit",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "githubRequest",
+          "params": ["fn", "maxRetries"],
+          "returnType": "Promise<T>",
+          "exported": true,
+          "lineCount": 34
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "octokit",
+          "specifiers": ["Octokit"]
+        }
+      ],
+      "exports": ["useGitHub", "githubRequest"],
+      "totalLines": 62,
+      "hasStructuralAnalysis": true
+    },
+    "tests/types.test.ts": {
+      "filePath": "tests/types.test.ts",
+      "contentHash": "71467001b5855e5fcf2f0c00d5c5767131fc5d78d4bf6d9450a4c38854185eb1",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "vitest",
+          "specifiers": ["describe", "it", "expect"]
+        },
+        {
+          "source": "~/types",
+          "specifiers": ["GitHubRepo", "GitHubRepoDetail", "AIChatMessage", "TrendRange"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 67,
+      "hasStructuralAnalysis": true
+    },
+    "tests/useAsyncData.test.ts": {
+      "filePath": "tests/useAsyncData.test.ts",
+      "contentHash": "c5f11fdededac39030b43412cd5d98d49a29020b73bac6a0791e1b7456162b35",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "vitest",
+          "specifiers": ["describe", "it", "expect", "vi"]
+        },
+        {
+          "source": "~/composables/useAsyncData",
+          "specifiers": ["useAsyncData"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 39,
+      "hasStructuralAnalysis": true
+    },
+    "tests/utils.test.ts": {
+      "filePath": "tests/utils.test.ts",
+      "contentHash": "e76b93802cdd4e45e0f0f4daa5486f4b6b3fb759e3289a148d6e342ff17ea9ef",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "vitest",
+          "specifiers": ["describe", "it", "expect"]
+        },
+        {
+          "source": "dayjs",
+          "specifiers": ["dayjs"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 45,
+      "hasStructuralAnalysis": true
+    },
+    "vitest.config.ts": {
+      "filePath": "vitest.config.ts",
+      "contentHash": "23b507ceeaf5f37e2bb8c1469a17039c89fdfb8fc38417a16860f425c5e026c5",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@vitejs/plugin-vue",
+          "specifiers": ["vue"]
+        },
+        {
+          "source": "vitest/config",
+          "specifiers": ["defineConfig"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 17,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

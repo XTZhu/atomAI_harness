@@ -1,0 +1,30 @@
+# .understandignore — 分析排除模式
+# 语法与 .gitignore 相同 (globs, # 注释, ! 取反, / 结尾表示目录)
+# 下面是建议的排除项，取消注释即可激活。
+# 使用 ! 前缀可以强制包含被默认排除的文件。
+#
+# 内置默认排除 (始终生效，除非使用 ! 取反):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+# --- 来自 .gitignore (取消注释即可排除) ---
+
+# .output
+# .data
+# .nuxt
+# .nitro
+# logs
+# .DS_Store
+# .fleet
+# .env
+# .env.*
+# !.env.example
+
+# --- 检测到的目录 (取消注释即可排除) ---
+
+# tests/
+
+# --- 测试文件模式 (取消注释即可排除) ---
+
+# *.test.*
+# *.spec.*
+# *.snap
