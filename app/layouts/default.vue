@@ -19,10 +19,14 @@
             </defs>
           </svg>
         </div>
-        <div v-show="!sidebarCollapsed" class="brand-text">
+        <div v-show="!sidebarCollapsed || isMobile" class="brand-text">
           <span class="brand-name">RepoLens</span>
           <span class="brand-tagline">AI-Powered Explorer</span>
         </div>
+        <!-- 移动端关闭按钮 -->
+        <button v-if="isMobile" class="sidebar-close-btn" @click.stop="closeSidebar" aria-label="关闭菜单">
+          <el-icon :size="20"><Close /></el-icon>
+        </button>
       </div>
 
       <!--  导航（展开态） -->
@@ -121,7 +125,7 @@
           <span class="footer-sep">·</span>
           <span class="footer-text">Nuxt 4 + Vue 3 + Element Plus</span>
           <span class="footer-sep">·</span>
-          <span class="footer-text">通义千问 · 智谱 GLM · DeepSeek · Ollama</span>
+          <span class="footer-text"> 智谱 GLM · DeepSeek 提供支持</span>
         </footer>
       </div>
     </main>
@@ -287,12 +291,33 @@ onMounted(() => {
   background: var(--el-bg-color);
   display: flex;
   flex-direction: column;
-  transition: width 0.25s ease;
+  transition: width 0.25s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   overflow: hidden;
 }
 
 .sidebar.collapsed { width: 64px; }
+
+/* 移动端关闭按钮 */
+.sidebar-close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--el-text-color-secondary);
+  cursor: pointer;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-close-btn:hover {
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-primary);
+}
 
 /* Brand */
 .brand {
@@ -610,6 +635,11 @@ onMounted(() => {
 @media (max-width: 768px) {
   /* 显示汉堡菜单 */
   .hamburger-btn {
+    display: flex;
+  }
+
+  /* 显示侧边栏关闭按钮 */
+  .sidebar-close-btn {
     display: flex;
   }
 
