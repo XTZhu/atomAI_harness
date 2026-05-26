@@ -125,7 +125,7 @@
           <span class="footer-sep">·</span>
           <span class="footer-text">Nuxt 4 + Vue 3 + Element Plus</span>
           <span class="footer-sep">·</span>
-          <span class="footer-text"> 智谱 GLM · DeepSeek 提供支持</span>
+          <span class="footer-text">通义千问 · 智谱 GLM · DeepSeek · Ollama</span>
         </footer>
       </div>
     </main>
@@ -609,6 +609,11 @@ onMounted(() => {
   font-size: 12px;
   color: var(--el-text-color-placeholder);
   flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
 }
 
 .footer-text {
@@ -616,7 +621,7 @@ onMounted(() => {
 }
 
 .footer-sep {
-  margin: 0 6px;
+  margin: 0 4px;
   color: var(--el-border-color);
 }
 
@@ -688,5 +693,16 @@ onMounted(() => {
   .ai-btn { padding: 6px 10px; min-width: auto; }
   .page-body { padding: 12px; }
   .breadcrumb-nav { font-size: 12px; }
+
+  .app-footer {
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 12px 8px;
+    font-size: 11px;
+  }
+
+  .footer-sep {
+    display: none;
+  }
 }
 </style>
