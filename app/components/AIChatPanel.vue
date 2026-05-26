@@ -203,6 +203,7 @@
 
 <script setup lang="ts">
 import { Cpu, Close, User, Promotion, VideoPause, Folder, Plus, InfoFilled, Search } from '@element-plus/icons-vue'
+import { useDebounceFn } from '@vueuse/core'
 import type { GitHubRepoDetail, GitHubRepo } from '~/types'
 
 interface ChatMessage { role: 'user' | 'assistant'; content: string }
@@ -238,18 +239,27 @@ const panelState = computed<PanelState>(() => {
   return 'active'
 })
 
-// ===== 多仓库对话存储（vueuse useStorage 自动持久化）=====
-const conversations = useStorage<Record<string, ChatMessage[]>>('repolens:ai-convs', {})
+// ===== 多仓库对话存储 =====
+const STORAGE_KEY = 'repolens:ai-convs'
 
-// SSR 兼容：确保 conversations.value 不为 undefined
-const safeConversations = computed(() => conversations.value || {})
+const loadConversations = (): Record<string, ChatMessage[]> => {
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {} }
+  catch { return {} }
+}
+
+const saveConversations = (data: Record<string, ChatMessage[]>) => {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) } catch { /* */ }
+}
+
+const conversations = ref<Record<string, ChatMessage[]>>(loadConversations())
 const activeSessionKey = ref<string | null>(null)
 const messages = ref<ChatMessage[]>([])
 
 const saveCurrent = () => {
   const key = activeSessionKey.value
   if (key && messages.value.length > 0) {
-    safeConversations.value[key] = [...messages.value]
+    conversations.value[key] = [...messages.value]
+    saveConversations(conversations.value)
   }
 }
 
@@ -257,7 +267,7 @@ const loadRepo = (key: string) => {
   if (streaming.value) return
   saveCurrent()
   activeSessionKey.value = key
-  messages.value = [...(safeConversations.value[key] || [])]
+  messages.value = [...(conversations.value[key] || [])]
   streamContent.value = ''
 }
 
@@ -306,7 +316,7 @@ const onSearchResultClick = async (repo: GitHubRepo) => {
 // ===== 最近仓库列表 =====
 const recentRepos = computed(() => {
   const list: { key: string; count: number }[] = []
-  for (const [key, msgs] of Object.entries(safeConversations.value)) {
+  for (const [key, msgs] of Object.entries(conversations.value)) {
     if (key !== '__default__' && msgs.length > 0) {
       list.push({ key, count: msgs.length })
     }

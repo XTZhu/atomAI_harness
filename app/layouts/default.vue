@@ -131,15 +131,13 @@
     </main>
 
     <!-- AI 聊天面板 -->
-    <ClientOnly>
-      <AIChatPanel
-        :is-open="chatOpen"
-        :repo-context="globalChatRepo"
-        :repo-data="globalChatRepoData"
-        @close="handleChatClose"
-        @clear-context="handleClearContext"
-      />
-    </ClientOnly>
+    <AIChatPanel
+      :is-open="chatOpen"
+      :repo-context="globalChatRepo"
+      :repo-data="globalChatRepoData"
+      @close="handleChatClose"
+      @clear-context="handleClearContext"
+    />
   </div>
 </template>
 
