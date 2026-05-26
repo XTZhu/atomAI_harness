@@ -212,6 +212,14 @@ const selectedRepo = ref<GitHubRepoDetail | null>(null)
 const detailLoading = ref(false)
 const recentRepos = ref<{ name: string; owner?: { avatar: string } }[]>([])
 
+// 从 localStorage 恢复
+const loadRecentFromStorage = () => {
+  try {
+    const stored = localStorage.getItem('repolens:recent')
+    if (stored) recentRepos.value = JSON.parse(stored)
+  } catch { /* ignore */ }
+}
+
 // 输入框 Ref
 const searchInputRef = ref()
 
@@ -239,6 +247,7 @@ const hotTags = [
 
 // ===== 生命周期 =====
 onMounted(() => {
+  loadRecentFromStorage()
   placeholderTimer = setInterval(() => {
     placeholderIndex.value = (placeholderIndex.value + 1) % placeholders.length
   }, 4000)
@@ -368,6 +377,7 @@ const addRecent = (repo: { name: string; owner?: { avatar: string } }) => {
     repo,
     ...recentRepos.value.filter(r => r.name !== repo.name),
   ].slice(0, 6)
+  localStorage.setItem('repolens:recent', JSON.stringify(recentRepos.value))
 }
 
 // ===== 搜索框焦点效果 =====
