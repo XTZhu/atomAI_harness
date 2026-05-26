@@ -163,6 +163,10 @@ const sidebarOpen = ref(false)
 const toggleSidebar = () => {
   if (isMobile.value) {
     sidebarOpen.value = !sidebarOpen.value
+    // 移动端禁止 collapsed 状态与 open 冲突
+    if (sidebarOpen.value) {
+      sidebarCollapsed.value = false
+    }
   } else {
     sidebarCollapsed.value = !sidebarCollapsed.value
   }
@@ -668,6 +672,11 @@ onMounted(() => {
   .sidebar.collapsed {
     transform: translateX(-100%);
     width: 260px;
+  }
+
+  /* open 必须覆盖 collapsed */
+  .sidebar.open.collapsed {
+    transform: translateX(0);
   }
 
   .top-bar {
