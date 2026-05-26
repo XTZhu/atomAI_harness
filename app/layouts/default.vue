@@ -62,9 +62,9 @@
 
       <!-- 底部操作区 -->
       <div class="sidebar-footer">
-        <!-- 折叠开关 -->
-        <el-tooltip :content="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'" placement="right">
-          <button class="toggle-btn" @click="sidebarCollapsed = !sidebarCollapsed">
+        <!-- 折叠开关（仅桌面端） -->
+        <el-tooltip v-if="!isMobile" :content="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'" placement="right">
+          <button class="toggle-btn" @click="toggleSidebar">
             <el-icon :size="16" class="toggle-icon" :class="{ flipped: sidebarCollapsed }">
               <DArrowLeft />
             </el-icon>
