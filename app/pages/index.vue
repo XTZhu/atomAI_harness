@@ -128,16 +128,7 @@
               <FolderOpened />
             </el-icon>
           </template>
-          <el-button
-            type="primary"
-            plain
-            @click="
-              keyword = ''
-              searchInputRef?.focus()
-            "
-          >
-            换个关键词试试
-          </el-button>
+          <el-button type="primary" plain @click="clearAndFocus"> 换个关键词试试 </el-button>
         </el-empty>
       </div>
     </section>
@@ -422,6 +413,10 @@ const addRecent = (repo: { name: string; owner?: { avatar: string } }) => {
 }
 
 // ===== 搜索框焦点效果 =====
+const clearAndFocus = () => {
+  keyword.value = ''
+  searchInputRef.value?.focus()
+}
 const isFocused = ref(false)
 const onSearchFocus = () => {
   isFocused.value = true

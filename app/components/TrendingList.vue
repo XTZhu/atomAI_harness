@@ -72,16 +72,7 @@
             </a>
             <div class="trending-actions" @click.stop>
               <el-tooltip content="AI 分析" :disabled="isTouchDevice">
-                <el-button
-                  text
-                  size="small"
-                  circle
-                  class="ai-action-btn"
-                  @click="
-                    $emit('select', item)
-                    $emit('chat', item)
-                  "
-                >
+                <el-button text size="small" circle class="ai-action-btn" @click="onAiAction(item)">
                   <el-icon :size="14">
                     <Cpu />
                   </el-icon>
@@ -185,6 +176,11 @@ const langColors: LangColorMap = {
 }
 
 const getLangColor = (lang: string) => langColors[lang] || '#8b8b8b'
+
+const onAiAction = (item: GitHubRepo) => {
+  emit('select', item)
+  emit('chat', item)
+}
 
 const formatNum = (n: number) => {
   if (!n) return '0'
