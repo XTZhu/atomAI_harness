@@ -242,16 +242,15 @@ const panelState = computed<PanelState>(() => {
 // ===== 多仓库对话存储 =====
 const STORAGE_KEY = 'repolens:ai-convs'
 
-const loadConversations = (): Record<string, ChatMessage[]> => {
-  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {} }
-  catch { return {} }
-}
-
 const saveConversations = (data: Record<string, ChatMessage[]>) => {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) } catch { /* */ }
 }
 
-const conversations = ref<Record<string, ChatMessage[]>>(loadConversations())
+const conversations = ref<Record<string, ChatMessage[]>>({})
+
+onMounted(() => {
+  try { const r = localStorage.getItem(STORAGE_KEY); if (r) conversations.value = JSON.parse(r) } catch { /* */ }
+})
 const activeSessionKey = ref<string | null>(null)
 const messages = ref<ChatMessage[]>([])
 

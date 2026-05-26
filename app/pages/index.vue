@@ -211,11 +211,11 @@ const loading = ref(false)
 const page = ref(1)
 const selectedRepo = ref<GitHubRepoDetail | null>(null)
 const detailLoading = ref(false)
-const loadRecent = () => {
-  try { const r = localStorage.getItem('repolens:recent'); return r ? JSON.parse(r) : [] }
-  catch { return [] }
-}
-const recentRepos = ref<{ name: string; owner?: { avatar: string } }[]>(loadRecent())
+const recentRepos = ref<{ name: string; owner?: { avatar: string } }[]>([])
+
+onMounted(() => {
+  try { const r = localStorage.getItem('repolens:recent'); if (r) recentRepos.value = JSON.parse(r) } catch { /* */ }
+})
 
 // 输入框 Ref
 const searchInputRef = ref()
