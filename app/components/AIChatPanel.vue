@@ -7,6 +7,7 @@
           <div class="chat-title">
             <el-icon :size="20"><Cpu /></el-icon>
             <span>AI 代码助手</span>
+            <el-tag size="small" type="warning" effect="dark" round class="model-tag">{{ aiModelName }}</el-tag>
             <!-- Repo 上下文标签（可单独移除） -->
             <el-tag
               v-if="repoContext"
@@ -168,6 +169,10 @@ const streaming = ref(false)
 const loading = ref(false)
 const streamContent = ref('')
 const abortController = ref<AbortController | null>(null)
+
+// ===== 模型名称 =====
+const config = useRuntimeConfig()
+const aiModelName = computed(() => config.public.aiModel || 'AI')
 
 // 根据是否有 repo 上下文切换快捷问题
 const quickPrompts = computed(() => {
@@ -368,6 +373,13 @@ const scrollToBottom = () => {
   min-width: 0;
 }
 .chat-actions { display: flex; gap: 2px; }
+
+/* 模型标签 */
+.model-tag {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
 
 /* 仓库上下文标签截断 */
 .repo-context-tag {

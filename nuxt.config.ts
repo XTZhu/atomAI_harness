@@ -40,6 +40,7 @@ export default defineNuxtConfig({
     aiSystemPrompt: '',
     public: {
       apiBase: '/api',
+      aiModel: 'glm-4-flash',
     },
   },
 
