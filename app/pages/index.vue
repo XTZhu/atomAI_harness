@@ -188,7 +188,6 @@
 import {
   Search, Setting, Close, ArrowLeft, ArrowRight, TrendCharts, FolderOpened,
 } from '@element-plus/icons-vue'
-import { useStorage } from '@vueuse/core'
 import type { GitHubRepo, GitHubRepoDetail } from '~/types'
 
 definePageMeta({ layout: 'default' })
@@ -212,7 +211,11 @@ const loading = ref(false)
 const page = ref(1)
 const selectedRepo = ref<GitHubRepoDetail | null>(null)
 const detailLoading = ref(false)
-const recentRepos = useStorage<{ name: string; owner?: { avatar: string } }[]>('repolens:recent', [])
+const loadRecent = () => {
+  try { const r = localStorage.getItem('repolens:recent'); return r ? JSON.parse(r) : [] }
+  catch { return [] }
+}
+const recentRepos = ref<{ name: string; owner?: { avatar: string } }[]>(loadRecent())
 
 // 输入框 Ref
 const searchInputRef = ref()
@@ -370,6 +373,7 @@ const addRecent = (repo: { name: string; owner?: { avatar: string } }) => {
     repo,
     ...recentRepos.value.filter(r => r.name !== repo.name),
   ].slice(0, 6)
+  try { localStorage.setItem('repolens:recent', JSON.stringify(recentRepos.value)) } catch { /* */ }
 }
 
 // ===== 搜索框焦点效果 =====
