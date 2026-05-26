@@ -10,8 +10,14 @@
             <el-tag size="small" type="warning" effect="dark" round class="model-tag">{{ aiModelName }}</el-tag>
           </div>
           <div class="chat-actions">
-            <el-tooltip :content="newConversationTooltip" placement="bottom">
-              <el-button text circle :disabled="!canNewConversation" @click="newConversation">
+            <!-- 新建对话（disabled 时包一层 span 让 tooltip 生效） -->
+            <el-tooltip :content="newConversationTooltip" placement="bottom" :disabled="canNewConversation">
+              <span v-if="!canNewConversation" class="disabled-btn-wrap">
+                <el-button text circle disabled>
+                  <el-icon :size="16"><Plus /></el-icon>
+                </el-button>
+              </span>
+              <el-button v-else text circle @click="newConversation">
                 <el-icon :size="16"><Plus /></el-icon>
               </el-button>
             </el-tooltip>
@@ -23,11 +29,40 @@
           </div>
         </div>
 
+        <!-- ===== 快速搜索入口 ===== -->
+        <div class="chat-search-bar">
+          <el-input
+            v-model="searchQuery"
+            size="small"
+            placeholder="搜索仓库..."
+            clearable
+            @keyup.enter="doRepoSearch"
+          >
+            <template #prefix>
+              <el-icon :size="14"><Search /></el-icon>
+            </template>
+          </el-input>
+        </div>
+
+        <!-- ===== 搜索结果下拉 ===== -->
+        <div v-if="searchResults.length > 0" class="search-results-drop">
+          <div
+            v-for="r in searchResults"
+            :key="r.name"
+            class="search-result-item"
+            @click="onSearchResultClick(r)"
+          >
+            <el-avatar :size="20" :src="r.owner?.avatar" />
+            <span class="search-result-name">{{ r.name }}</span>
+            <el-tag v-if="r.language" size="small" type="info">{{ r.language }}</el-tag>
+          </div>
+        </div>
+
         <!-- ===== 仓库上下文条 ===== -->
-        <div class="chat-context-bar" :class="{ active: !!repoContext }">
-          <template v-if="repoContext">
+        <div class="chat-context-bar" :class="{ active: hasActiveRepo }">
+          <template v-if="hasActiveRepo">
             <el-icon :size="15" class="context-icon"><Folder /></el-icon>
-            <span class="context-repo">{{ repoContext }}</span>
+            <span class="context-repo">{{ activeSessionKey }}</span>
             <span v-if="messages.length > 0" class="context-msg-count">{{ messages.length }} 条对话</span>
             <el-button text size="small" class="context-close" @click="removeContext">
               <el-icon :size="14"><Close /></el-icon>
@@ -64,8 +99,8 @@
               <el-icon :size="44"><Cpu /></el-icon>
             </div>
             <h3>AI 代码分析助手</h3>
-            <p v-if="repoContext">
-              正在分析 <strong>{{ repoContext }}</strong>，你可以问：
+            <p v-if="hasActiveRepo">
+              正在分析 <strong>{{ activeSessionKey }}</strong>，你可以问：
             </p>
             <p v-else>
               选择一个仓库后点击「AI 分析」，我可以帮你深入理解代码
@@ -164,8 +199,8 @@
 </template>
 
 <script setup lang="ts">
-import { Cpu, Close, User, Promotion, VideoPause, Folder, Plus, InfoFilled } from '@element-plus/icons-vue'
-import type { GitHubRepoDetail } from '~/types'
+import { Cpu, Close, User, Promotion, VideoPause, Folder, Plus, InfoFilled, Search } from '@element-plus/icons-vue'
+import type { GitHubRepoDetail, GitHubRepo } from '~/types'
 
 interface ChatMessage { role: 'user' | 'assistant'; content: string }
 
@@ -189,10 +224,11 @@ const abortController = ref<AbortController | null>(null)
 const config = useRuntimeConfig()
 const aiModelName = computed(() => config.public.aiModel || 'AI')
 
-// ===== 状态枚举 =====
+// ===== 状态枚举（基于本地 activeSessionKey 而非 props.repoContext） =====
 type PanelState = 'idle' | 'ready' | 'active' | 'streaming' | 'loading'
+const hasActiveRepo = computed(() => !!activeSessionKey.value)
 const panelState = computed<PanelState>(() => {
-  if (!props.repoContext) return 'idle'
+  if (!hasActiveRepo.value) return 'idle'
   if (streaming.value) return 'streaming'
   if (loading.value) return 'loading'
   if (messages.value.length === 0) return 'ready'
@@ -229,6 +265,48 @@ watch(() => props.isOpen, (open) => {
   if (open && props.repoContext) loadRepo(props.repoContext)
 })
 
+// ===== 仓库搜索 =====
+const searchQuery = ref('')
+const searchResults = ref<GitHubRepo[]>([])
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+const doRepoSearch = async () => {
+  const q = searchQuery.value.trim()
+  if (!q) { searchResults.value = []; return }
+
+  try {
+    const data = await $fetch<{ items: GitHubRepo[] }>('/api/github/search', {
+      query: { q, per_page: 5 },
+    })
+    searchResults.value = data.items || []
+  } catch {
+    searchResults.value = []
+  }
+}
+
+// 输入防抖搜索
+watch(searchQuery, (val) => {
+  if (searchTimer) clearTimeout(searchTimer)
+  if (!val.trim()) { searchResults.value = []; return }
+  searchTimer = setTimeout(() => doRepoSearch(), 300)
+})
+
+const onSearchResultClick = async (repo: GitHubRepo) => {
+  searchResults.value = []
+  searchQuery.value = ''
+  // 加载仓库上下文
+  try {
+    const detail = await $fetch<GitHubRepoDetail>(`/api/github/repo/${repo.name}`)
+    // 将详情存入 conversations 的 metadata（如果有需要）
+    loadRepo(repo.name)
+    // 通过事件通知父组件
+    window.dispatchEvent(new CustomEvent('repolens:switch-repo', { detail: { repo: repo.name, data: detail } }))
+  } catch (err: any) {
+    loadRepo(repo.name)
+    ElMessage.warning('仓库详情加载失败，但已切换上下文')
+  }
+}
+
 // ===== 最近仓库列表 =====
 const recentRepos = computed(() => {
   const list: { key: string; count: number }[] = []
@@ -246,31 +324,36 @@ const canNewConversation = computed(() =>
 )
 
 const newConversation = () => {
-  if (!props.repoContext || !canNewConversation.value) return
+  if (!hasActiveRepo.value || !canNewConversation.value) return
 
   if (messages.value.length === 0) {
     ElMessage.info('当前已是新对话')
     return
   }
 
-  // 有消息时弹出确认
+  const key = activeSessionKey.value!
   ElMessageBox.confirm('确定清空当前仓库的对话记录？', '新建对话', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    conversations.value.set(props.repoContext!, [])
+    conversations.value.set(key, [])
     messages.value = []
     streamContent.value = ''
-    activeSessionKey.value = props.repoContext
     scrollToBottom()
   }).catch(() => {})
 }
 
-// ===== 操作：切换仓库 =====
+// ===== 操作：切换仓库（chip 点击） =====
 const switchRepo = (key: string) => {
   if (streaming.value) return
   loadRepo(key)
+  // 同步到父组件
+  emit('clear-context')
+  nextTick(() => {
+    // 通过事件总线更新父组件的 repoContext
+    window.dispatchEvent(new CustomEvent('repolens:switch-repo', { detail: { repo: key } }))
+  })
 }
 
 // ===== 操作：关闭面板 / 移除上下文 =====
@@ -288,7 +371,7 @@ const removeContext = () => {
 
 // ===== 快捷提问 =====
 const quickPrompts = computed(() => {
-  if (props.repoContext) {
+  if (hasActiveRepo.value) {
     return [
       '这个项目的主要功能是什么？',
       '代码架构是怎样的？',
@@ -304,7 +387,7 @@ const quickPrompts = computed(() => {
 })
 
 const onPromptClick = (prompt: string) => {
-  if (!props.repoContext || !canSend.value) {
+  if (!hasActiveRepo.value || !canSend.value) {
     ElMessage.info('请先选择一个仓库')
     return
   }
@@ -472,6 +555,54 @@ const scrollToBottom = () => {
 .chat-actions { display: flex; gap: 2px; align-items: center; }
 
 .model-tag { font-size: 10px; letter-spacing: 0.5px; flex-shrink: 0; }
+
+.model-tag { font-size: 10px; letter-spacing: 0.5px; flex-shrink: 0; }
+
+/* disabled 按钮 tooltip 包裹 */
+.disabled-btn-wrap { display: inline-flex; }
+
+/* ===== 搜索条 ===== */
+.chat-search-bar {
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  flex-shrink: 0;
+}
+
+.chat-search-bar :deep(.el-input__wrapper) {
+  border-radius: 8px;
+  box-shadow: none;
+  background: var(--el-fill-color-light);
+}
+
+/* 搜索结果下拉 */
+.search-results-drop {
+  max-height: 200px;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  flex-shrink: 0;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.search-result-item:hover {
+  background: var(--el-fill-color-light);
+}
+
+.search-result-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* ===== 上下文条 ===== */
 .chat-context-bar {

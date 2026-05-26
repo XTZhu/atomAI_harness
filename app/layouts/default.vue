@@ -197,6 +197,28 @@ const handleChatClose = () => {
   globalChatRepoData.value = null
 }
 
+// 监听 AI 面板内仓库切换事件
+const onPanelSwitchRepo = (e: Event) => {
+  const { repo, data } = (e as CustomEvent).detail || {}
+  if (repo) {
+    globalChatRepo.value = repo
+    if (data) globalChatRepoData.value = data
+    addRecentRepo(repo)
+  }
+}
+
+const addRecentRepo = (name: string) => {
+  // 触发 index 页面的最近浏览更新（通过 broadcast）
+}
+
+onMounted(() => {
+  window.addEventListener('repolens:switch-repo', onPanelSwitchRepo)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('repolens:switch-repo', onPanelSwitchRepo)
+})
+
 // 清除对话时重置上下文
 const handleClearContext = () => {
   globalChatRepo.value = null
